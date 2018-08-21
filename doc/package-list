@@ -1,4 +1,5 @@
 org.matsim.contrib.smartcity.actuation.semaphore
+org.matsim.contrib.smartcity.agent
 org.matsim.contrib.smartcity.perception
 org.matsim.contrib.smartcity.perception.camera
 org.matsim.contrib.smartcity.perception.wrapper
