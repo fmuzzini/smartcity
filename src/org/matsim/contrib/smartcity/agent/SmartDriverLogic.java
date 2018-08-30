@@ -5,51 +5,64 @@ package org.matsim.contrib.smartcity.agent;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.mobsim.qsim.agents.PersonDriverAgentImpl;
+import org.matsim.api.core.v01.population.Leg;
 
 /**
- * Interface that define the method that can be called for using an agent logic.
- * PersonDriverAgentImpl can be used to call a standard behavior of agents
- * in order to simplify the implementation of smart logic.
+ * Interface that define the method that can be called for using an agent driver logic.
  * 
  * @see AbstractDriverLogic
- * @see PersonDriverAgentImpl
  * @author Filippo Muzzini
  *
  */
 public interface SmartDriverLogic {
 
-	/**Set the PersonDriverAgentImpl instance
-	 * 
-	 * @param personDriverAgent
-	 */
-	public void setPersonDriverAgent(PersonDriverAgentImpl personDriverAgent);
-	
 	/**
-	 * For compatibility to PersonDriverAgentImpl method
+	 * Called after an action is endend in now time
+	 * 
+	 * @param now ending time
 	 */
-	public void resetCaches();
+	void finalizeAction(double now);
 
 	/**
-	 * Return the next link that the agent must take.
-	 * In this method there is the logic.
+	 * Called when agent change is positione
+	 * 
+	 * @param linkId new Link id
+	 */
+	void setActualLink(Id<Link> linkId);
+
+	/**
+	 * Return the destination
+	 * @return destination
+	 */
+	Id<Link> getDestinationLinkId();
+
+	/**
+	 * Return the next link that agent must take.
 	 * 
 	 * @return next link
 	 */
-	public Id<Link> chooseNextLinkId();
+	Id<Link> getNextLinkId();
 
 	/**
-	 * Called when the agent was moved over node to new link.
+	 * Set the leg
 	 * 
-	 * @param newLinkId
+	 * @param leg
 	 */
-	public void notifyMoveOverNode(Id<Link> newLinkId);
+	void setLeg(Leg leg);
 
 	/**
-	 * Return if the agent want to stop on this link;
-	 * e.g. the agent is arrived to destination.
-	 * 
+	 * Return the excepted travel time
+	 * @return travel time
 	 */
-	public boolean isWantingToArriveOnCurrentLink();
+	Double getTravelTime();
+
+	/**
+	 * Return the excepted travel distance
+	 * @return travel distance
+	 */
+	Double getDistance();
+
+
+
 
 }

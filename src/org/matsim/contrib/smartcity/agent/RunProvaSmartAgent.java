@@ -4,6 +4,7 @@
 package org.matsim.contrib.smartcity.agent;
 
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.otfvis.OTFVisLiveModule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -32,6 +33,9 @@ public class RunProvaSmartAgent {
 		
 		//add smartagent module
 		controler.addOverridingModule(new SmartAgentModule());
+		
+		//add vis module
+		controler.addOverridingModule(new OTFVisLiveModule());
 		
 		controler.run();
 	}

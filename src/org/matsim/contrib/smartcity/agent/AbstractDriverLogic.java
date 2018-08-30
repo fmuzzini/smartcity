@@ -5,10 +5,11 @@ package org.matsim.contrib.smartcity.agent;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.mobsim.qsim.agents.PersonDriverAgentImpl;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Route;
 
 /**
- * Abstract class that implements a standard behavior of an agent logic.
+ * Abstract class that implements a standard behavior of SmartDriverLogic.
  * This simplify the implementations of SmartDriverLogic interface.
  * 
  * The only abstract method is chooseNextLinkId; implement in this method the
@@ -21,44 +22,57 @@ import org.matsim.core.mobsim.qsim.agents.PersonDriverAgentImpl;
  */
 public abstract class AbstractDriverLogic implements SmartDriverLogic {
 
-	protected PersonDriverAgentImpl personDriverAgent;
+	protected Leg leg;
+	protected Id<Link> actualLink;
+	protected Id<Link> startLink;
+	protected Id<Link> endLink;
+	protected Route route;
+
+	@Override
+	public abstract Id<Link> getNextLinkId();
 
 	/* (non-Javadoc)
-	 * @see org.matsim.core.mobsim.framework.DriverAgent#chooseNextLinkId()
+	 * @see org.matsim.contrib.smartcity.agent.SmartDriverLogic#finalizeAction(double)
 	 */
 	@Override
-	public abstract Id<Link> chooseNextLinkId();
-
-	/* (non-Javadoc)
-	 * @see org.matsim.core.mobsim.framework.DriverAgent#notifyMoveOverNode(org.matsim.api.core.v01.Id)
-	 */
-	@Override
-	public void notifyMoveOverNode(Id<Link> newLinkId) {
-		this.personDriverAgent.notifyMoveOverNode(newLinkId);
+	public void finalizeAction(double now) {		
 	}
 
 	/* (non-Javadoc)
-	 * @see org.matsim.core.mobsim.framework.DriverAgent#isWantingToArriveOnCurrentLink()
+	 * @see org.matsim.contrib.smartcity.agent.SmartDriverLogic#setActualLink(org.matsim.api.core.v01.Id)
 	 */
 	@Override
-	public boolean isWantingToArriveOnCurrentLink() {
-		return this.personDriverAgent.isWantingToArriveOnCurrentLink();
+	public void setActualLink(Id<Link> linkId) {
+		this.actualLink = linkId;		
 	}
 
 	/* (non-Javadoc)
-	 * @see org.matsim.contrib.smartcity.agent.SmartDriverAgent#setPersonDriverAgent(org.matsim.core.mobsim.qsim.agents.PersonDriverAgentImpl)
+	 * @see org.matsim.contrib.smartcity.agent.SmartDriverLogic#getDestinationLinkId()
 	 */
 	@Override
-	public void setPersonDriverAgent(PersonDriverAgentImpl personDriverAgent) {
-		this.personDriverAgent = personDriverAgent;
+	public Id<Link> getDestinationLinkId() {
+		return this.endLink;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.matsim.contrib.smartcity.agent.SmartDriverAgent#resetCaches()
+	 * @see org.matsim.contrib.smartcity.agent.SmartDriverLogic#setLeg(org.matsim.api.core.v01.population.Leg)
 	 */
 	@Override
-	public void resetCaches() {
-		this.personDriverAgent.resetCaches();
+	public void setLeg(Leg leg) {
+		this.leg = leg;
+		this.route = leg.getRoute();
+		this.startLink = route.getStartLinkId();
+		this.endLink = route.getEndLinkId();
+	}
+	
+	@Override
+	public Double getTravelTime() {
+		return this.route.getTravelTime();
+	}
+	
+	@Override
+	public Double getDistance() {
+		return this.route.getDistance();
 	}
 
 }
