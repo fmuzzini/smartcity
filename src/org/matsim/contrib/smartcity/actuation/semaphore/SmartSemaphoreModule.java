@@ -1,14 +1,20 @@
 package org.matsim.contrib.smartcity.actuation.semaphore;
 
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.signals.SignalSystemsConfigGroup;
 import org.matsim.contrib.signals.analysis.SignalEvents2ViaCSVWriter;
 import org.matsim.contrib.signals.builder.FromDataBuilder;
 import org.matsim.contrib.signals.builder.SignalModelFactory;
 import org.matsim.contrib.signals.builder.SignalSystemsModelBuilder;
 import org.matsim.contrib.signals.controler.SignalsModule;
+import org.matsim.contrib.signals.data.SignalsData;
+import org.matsim.contrib.signals.data.SignalsDataLoader;
 import org.matsim.contrib.signals.mobsim.QSimSignalEngine;
 import org.matsim.contrib.signals.router.NetworkWithSignalsTurnInfoBuilder;
+import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.controler.events.StartupEvent;
+import org.matsim.core.controler.listener.StartupListener;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QSignalsNetworkFactory;
 import org.matsim.core.network.algorithms.NetworkTurnInfoBuilderI;
@@ -20,16 +26,17 @@ import org.matsim.core.network.algorithms.NetworkTurnInfoBuilderI;
  * @author Filippo Muzzini
  *
  */
-public class SmartSemaphoreModule extends SignalsModule {
+public class SmartSemaphoreModule extends SignalsModule implements StartupListener {
 
 	@Override
 	public void install() {
 		if ((boolean) ConfigUtils.addOrGetModule(getConfig(), SignalSystemsConfigGroup.GROUPNAME, SignalSystemsConfigGroup.class).isUseSignalSystems()) {
-			// bindings for fixed-time signals
+			// bindings for smartsignals
 			bind(SignalModelFactory.class).to(SmartSemaphoreModelFactory.class);
 			//addControlerListenerBinding().to(DefaultSignalControlerListener.class);
 
 			// general signal bindings
+			addControlerListenerBinding().to(this.getClass());
 			bind(SignalSystemsModelBuilder.class).to(FromDataBuilder.class);
 			addMobsimListenerBinding().to(QSimSignalEngine.class);
 			bind(QNetworkFactory.class).to(QSignalsNetworkFactory.class);
@@ -48,6 +55,16 @@ public class SmartSemaphoreModule extends SignalsModule {
 			bind(NetworkTurnInfoBuilderI.class).to(NetworkWithSignalsTurnInfoBuilder.class);
 		}
 
+	}
+
+	/* (non-Javadoc)
+	 * @see org.matsim.core.controler.listener.StartupListener#notifyStartup(org.matsim.core.controler.events.StartupEvent)
+	 */
+	@Override
+	public void notifyStartup(StartupEvent event) {
+		Config config = event.getServices().getConfig();
+		Scenario scenario = event.getServices().getScenario();
+		scenario.addScenarioElement(SignalsData.ELEMENT_NAME, new SignalsDataLoader(config).loadSignalsData());
 	}
 
 }

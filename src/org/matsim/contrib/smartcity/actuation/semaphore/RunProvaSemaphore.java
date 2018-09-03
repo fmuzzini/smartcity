@@ -1,8 +1,6 @@
 package org.matsim.contrib.smartcity.actuation.semaphore;
 
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.signals.data.SignalsData;
-import org.matsim.contrib.signals.data.SignalsDataLoader;
 import org.matsim.contrib.signals.otfvis.OTFVisWithSignalsLiveModule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -28,7 +26,7 @@ public class RunProvaSemaphore {
 		// --- create the scenario
 		Scenario scenario = ScenarioUtils.loadScenario(config);
 		// load the information about signals data (i.e. fill the SignalsData object) and add it to the scenario as scenario element
-		scenario.addScenarioElement(SignalsData.ELEMENT_NAME, new SignalsDataLoader(config).loadSignalsData());
+		
 
 		// --- create the controler
 		Controler c = new Controler(scenario);
