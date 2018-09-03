@@ -5,6 +5,7 @@ package org.matsim.contrib.smartcity;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 
 import com.google.inject.Injector;
 
@@ -31,6 +32,11 @@ public class InstantationUtils {
 	 * @return instantiated class object
 	 */
 	public static Object instantiateForName(Injector inj, String name) {
+		Class<?> objectClass = getClassForName(name);		
+		return instantiateClass(inj, objectClass);
+	}
+	
+	private static Class<?> getClassForName(String name){
 		String className = foundClassName(name);
 		Class<?> objectClass = null;
 		try {
@@ -40,7 +46,39 @@ public class InstantationUtils {
 			e1.printStackTrace();
 		}
 		
-		return instantiateClass(inj, objectClass);
+		return objectClass;
+	}
+	
+	/**
+	 * Instantiate the class defined in the name using the constructor with less number
+	 * of parameters and use the params specified. The non specified params are fell using
+	 * injector.
+	 * If the name don't contains the package, the default package is used.
+	 * 
+	 * @param inj injector
+	 * @param name name of class
+	 * @param params specified params
+	 * @return instantiated object
+	 */
+	public static Object instantiateForNameWithParams(Injector inj, String name, Object ... params) {
+		HashMap<Class<?>, Object> paramsType = new HashMap<Class<?>, Object>();
+		for (Object param : params) {
+			if (param != null)
+				paramsType.put(param.getClass(), param);
+		}
+		
+		Class<?> cl = getClassForName(name);
+		Constructor<?> constructor = getMinConstructor(cl);
+		Object[] paramsObj = new Object[constructor.getParameterTypes().length];
+		int i = 0;
+		for (Class<?> type : constructor.getParameterTypes()) {
+			Object obj = paramsType.get(type);
+			obj = obj != null ? obj : inj.getInstance(type);
+			paramsObj[i] = obj;
+			i++;
+		}
+				
+		return instantiateClassWithConstructorAndParams(inj, constructor, paramsObj);
 	}
 	
 
@@ -52,6 +90,11 @@ public class InstantationUtils {
 	 * @return instantiated class object
 	 */
 	public static Object instantiateClass(Injector inj, Class<?> cl) {
+		Constructor<?> constructor = getMinConstructor(cl);
+		return instantiateClassWithConstructor(inj, constructor);
+	}
+	
+	private static Constructor<?> getMinConstructor(Class<?> cl){
 		Constructor<?>[] constrs = cl.getConstructors();
 		int min = Integer.MAX_VALUE;
 		Constructor<?> constructor = null;
@@ -63,7 +106,7 @@ public class InstantationUtils {
 			}
 		}
 		
-		return instantiateClassWithConstructor(inj, constructor);
+		return constructor;
 	}
 	
 	/**
@@ -76,9 +119,14 @@ public class InstantationUtils {
 	public static Object instantiateClassWithConstructor(Injector inj, Constructor<?> constructor) {
 		Class<?>[] params = constructor.getParameterTypes();
 		Object[] objectsParams = getParams(inj, params);
+		
+		return instantiateClassWithConstructorAndParams(inj, constructor, objectsParams);
+	}
+	
+	private static Object instantiateClassWithConstructorAndParams(Injector inj, Constructor<?> constructor, Object[] params) {
 		Object res = null;
 		try {
-			res = constructor.newInstance(objectsParams);
+			res = constructor.newInstance(params);
 			inj.injectMembers(res);
 		} catch (InstantiationException e) {
 			e.printStackTrace();
@@ -116,7 +164,7 @@ public class InstantationUtils {
 	 * @param name name of class
 	 * @return name of class with package
 	 */
-	private static String foundClassName(String name) {
+	public static String foundClassName(String name) {
 		try {
 			Class.forName(name);
 			return name;

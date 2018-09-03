@@ -29,12 +29,7 @@ public class RunProvaPerception {
 		Controler controler = new Controler(scenario) ;
 		
 		//add perception module
-		PerceptionQSimModule wrapperProvider = new PerceptionQSimModule(config, scenario);
-		controler.addOverridingModule(wrapperProvider);
-		
-		//instantiate a test class that use perception module
-		@SuppressWarnings("unused")
-		ProvaPerception prova = new ProvaPerception(wrapperProvider.get());
+		controler.addOverridingModule(new PerceptionQSimModule(config));
 		
 		controler.run();
 	}

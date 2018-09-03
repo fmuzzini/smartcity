@@ -11,8 +11,6 @@ import org.matsim.contrib.smartcity.perception.wrapper.ActivePerceptionWrapper;
 import org.matsim.contrib.smartcity.perception.wrapper.LinkChangedListener;
 import org.matsim.contrib.smartcity.perception.wrapper.LinkTrafficStatus;
 
-import com.google.inject.Inject;
-
 /**
  * Simple class to test the wrapper.
  * Write to file all change in the roads netwrok
@@ -27,11 +25,6 @@ public class ProvaPerception implements LinkChangedListener {
 	private ActivePerceptionWrapper wrapper;
 	private PrintWriter stream;
 	
-	public ProvaPerception(){
-		super();
-	}
-	
-	@Inject
 	public ProvaPerception(ActivePerceptionWrapper wrapper) {
 		//create output file
 		createFile();
@@ -46,7 +39,7 @@ public class ProvaPerception implements LinkChangedListener {
 			File f = new File(file);
 			f.getParentFile().mkdirs();
 			f.createNewFile();
-			this.stream = new PrintWriter(this.file);
+			this.stream = new PrintWriter(f);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -61,7 +54,7 @@ public class ProvaPerception implements LinkChangedListener {
 		int linkStatus = wrapper.getTotalVehicleOnLink(idLink);
 		String str = "Link: "+idLink+" n: "+linkStatus;
 		this.stream.println(str);
-		
+		this.stream.flush();
 	}
 	
 }

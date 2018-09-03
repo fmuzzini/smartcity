@@ -12,6 +12,8 @@ import org.matsim.api.core.v01.events.VehicleLeavesTrafficEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 
+import com.google.inject.Inject;
+
 /**
  * Implementation of an ActivePerceptionWrapper.
  * This implementation handle the event of MATSim and also update a data structure
@@ -34,9 +36,13 @@ public class ActivePerceptionWrapperImpl extends PassivePerceptionWrapperImpl im
 	 * @param network MATSim network
 	 * @param scenario MATSim scenario
 	 */
+	@Inject
 	public ActivePerceptionWrapperImpl(Network network, Scenario scenario) {
 		super(network, scenario);
 		this.listeners = new HashMap<Id<Link>, ArrayList<LinkChangedListener>>();
+		for (Id<Link> link : network.getLinks().keySet()) {
+			this.listeners.put(link, new ArrayList<LinkChangedListener>());
+		}
 	}
 
 	@Override
@@ -74,7 +80,7 @@ public class ActivePerceptionWrapperImpl extends PassivePerceptionWrapperImpl im
 	}
 
 	private void linkChanged(Id<Link> idLink) {
-		LinkTrafficStatus status = this.getLinkTrafficStatus(idLink);
+		LinkTrafficStatus status = this.getLinkTrafficStatus(idLink);		
 		for (LinkChangedListener listener : this.listeners.get(idLink))
 			listener.publishLinkChanged(idLink, status);
 		
@@ -84,6 +90,7 @@ public class ActivePerceptionWrapperImpl extends PassivePerceptionWrapperImpl im
 	public void addLinkChangedListener(LinkChangedListener listener) {
 		for (ArrayList<LinkChangedListener> l : this.listeners.values()) {
 			l.add(listener);
+			l.getClass();
 		}
 	}
 	
