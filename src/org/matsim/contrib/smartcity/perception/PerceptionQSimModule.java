@@ -7,8 +7,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 
-import com.google.inject.Provider;
-
 /**
  * Module that instantiates the wrapper using reflection
  * and bind the class to the implemented interfaces.
