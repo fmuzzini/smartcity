@@ -31,16 +31,22 @@ public class InstantationUtils {
 	 * @param name name of class
 	 * @return instantiated class object
 	 */
-	public static Object instantiateForName(Injector inj, String name) {
-		Class<?> objectClass = getClassForName(name);		
+	public static <T> T instantiateForName(Injector inj, String name) {
+		Class<T> objectClass = getClassForName(name);		
 		return instantiateClass(inj, objectClass);
 	}
 	
-	private static Class<?> getClassForName(String name){
+	/**
+	 * Return the Class using specified name
+	 * @param name
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getClassForName(String name){
 		String className = foundClassName(name);
-		Class<?> objectClass = null;
+		Class<T> objectClass = null;
 		try {
-			objectClass = (Class<?>) Class.forName(className);
+			objectClass = (Class<T>) Class.forName(className);
 		} catch (ClassNotFoundException e1) {
 			System.err.println("Class "+className+" not found");
 			e1.printStackTrace();
@@ -60,15 +66,15 @@ public class InstantationUtils {
 	 * @param params specified params
 	 * @return instantiated object
 	 */
-	public static Object instantiateForNameWithParams(Injector inj, String name, Object ... params) {
+	public static <T> T instantiateForNameWithParams(Injector inj, String name, Object ... params) {
 		HashMap<Class<?>, Object> paramsType = new HashMap<Class<?>, Object>();
 		for (Object param : params) {
 			if (param != null)
 				paramsType.put(param.getClass(), param);
 		}
 		
-		Class<?> cl = getClassForName(name);
-		Constructor<?> constructor = getMinConstructor(cl);
+		Class<T> cl = getClassForName(name);
+		Constructor<T> constructor = getMinConstructor(cl);
 		Object[] paramsObj = new Object[constructor.getParameterTypes().length];
 		int i = 0;
 		for (Class<?> type : constructor.getParameterTypes()) {
@@ -89,16 +95,17 @@ public class InstantationUtils {
 	 * @param cl class
 	 * @return instantiated class object
 	 */
-	public static Object instantiateClass(Injector inj, Class<?> cl) {
-		Constructor<?> constructor = getMinConstructor(cl);
+	public static <T> T instantiateClass(Injector inj, Class<T> cl) {
+		Constructor<T> constructor = getMinConstructor(cl);
 		return instantiateClassWithConstructor(inj, constructor);
 	}
 	
-	private static Constructor<?> getMinConstructor(Class<?> cl){
-		Constructor<?>[] constrs = cl.getConstructors();
+	@SuppressWarnings("unchecked")
+	private static <T> Constructor<T> getMinConstructor(Class<T> cl){
+		Constructor<T>[] constrs = (Constructor<T>[]) cl.getConstructors();
 		int min = Integer.MAX_VALUE;
-		Constructor<?> constructor = null;
-		for (Constructor<?> c : constrs) {
+		Constructor<T> constructor = null;
+		for (Constructor<T> c : constrs) {
 			int n = c.getParameterTypes().length;
 			if (n <= min) {
 				min = n;
@@ -116,15 +123,15 @@ public class InstantationUtils {
 	 * @param constructor constructor
 	 * @return instantiated class object
 	 */
-	public static Object instantiateClassWithConstructor(Injector inj, Constructor<?> constructor) {
+	public static <T> T instantiateClassWithConstructor(Injector inj, Constructor<T> constructor) {
 		Class<?>[] params = constructor.getParameterTypes();
 		Object[] objectsParams = getParams(inj, params);
 		
 		return instantiateClassWithConstructorAndParams(inj, constructor, objectsParams);
 	}
 	
-	private static Object instantiateClassWithConstructorAndParams(Injector inj, Constructor<?> constructor, Object[] params) {
-		Object res = null;
+	private static <T> T instantiateClassWithConstructorAndParams(Injector inj, Constructor<T> constructor, Object[] params) {
+		T res = null;
 		try {
 			res = constructor.newInstance(params);
 			inj.injectMembers(res);
