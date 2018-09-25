@@ -1,0 +1,7 @@
+<!ELEMENT servers (server*) >
+
+<!ELEMENT server (coord*) >
+<!ATTLIST server id ID #REQUIRED class CDATA #REQUIRED >
+
+<!ELEMENT coord EMPTY >
+<!ATTLIST coord x CDATA #REQUIRED y CDATA #REQUIRED >

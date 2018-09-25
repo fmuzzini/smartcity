@@ -1,0 +1,4 @@
+<!ELEMENT cameras (camera*)>
+
+<!ELEMENT camera EMPTY>
+<!ATTLIST camera class CDATA #REQUIRED id ID #IMPLIED link CDATA #IMPLIED>
