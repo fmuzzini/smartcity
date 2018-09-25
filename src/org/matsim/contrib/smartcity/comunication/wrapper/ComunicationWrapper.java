@@ -19,7 +19,7 @@ public interface ComunicationWrapper {
 	/**
 	 * Return set of servers reachable in specified position
 	 * @param position
-	 * @return
+	 * @return set of servers
 	 */
 	public Set<ComunicationServer> discover(Id<Link> position);
 }

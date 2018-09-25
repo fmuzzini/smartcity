@@ -14,7 +14,7 @@ public interface ComunicationClient {
 	
 	/**
 	 * Return the set of reachable servers
-	 * @return
+	 * 
 	 */
 	public Set<ComunicationServer> discover();
 	

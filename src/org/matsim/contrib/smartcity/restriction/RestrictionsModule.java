@@ -5,12 +5,13 @@ package org.matsim.contrib.smartcity.restriction;
 
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.contrib.smartcity.scenariocreation.RestrictionsFromOSM;
 
 /**
  * Module that introduce restrictions in the network
  * The network file must have the proper attributes
  * 
- * @see RestrictionsFromOsm
+ * @see RestrictionsFromOSM
  * @author Filippo Muzzini
  *
  */

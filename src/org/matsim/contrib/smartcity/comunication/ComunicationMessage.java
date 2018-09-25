@@ -16,9 +16,7 @@ public class ComunicationMessage {
 		this.sender = sender;
 	}
 
-	/**
-	 * @return
-	 */
+
 	public ComunicationClient getSender() {
 		return this.sender;
 	}

@@ -39,7 +39,7 @@ public class InstantationUtils {
 	/**
 	 * Return the Class using specified name
 	 * @param name
-	 * @return
+	 * @return class
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> getClassForName(String name){

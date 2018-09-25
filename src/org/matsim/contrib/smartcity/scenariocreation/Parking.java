@@ -19,12 +19,7 @@ public class Parking extends Facility {
 
 	private static final String PARKING_TYPE = ParkingUtils.PARKACTIVITYTYPE;
 
-	/**
-	 * @param id
-	 * @param type
-	 * @param coord
-	 * @param links 
-	 */
+
 	public Parking(long id, Point coord, int cap, ArrayList<IOsmWay> links) {
 		super(id, PARKING_TYPE, coord);
 		ActivityOption option = this.getActivityOptions().get(PARKING_TYPE);

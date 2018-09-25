@@ -140,9 +140,7 @@ public class Signals {
 		
 	}
 
-	/**
-	 * @return
-	 */
+
 	public SignalSystemsConfigGroup getConfigGroup() {
 		SignalSystemsConfigGroup config = new SignalSystemsConfigGroup();
 		config.setActionOnIntergreenViolation(ActionOnSignalSpecsViolation.WARN);

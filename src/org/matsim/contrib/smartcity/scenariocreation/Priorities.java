@@ -49,10 +49,7 @@ public class Priorities {
 	private short priority_forward_tag;
 	private short priority_backward_tag;
 
-	/**
-	 * @param result
-	 * @param network
-	 */
+
 	public Priorities(MemoryStorage storage, Network network) {
 		this.storage = storage;
 		this.network = network;

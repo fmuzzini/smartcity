@@ -63,7 +63,7 @@ public class SmartAgentLogic implements DynAgentLogic {
 	 * 
 	 * @param plan1 Plan for PersonDriverAgentImpl
 	 * @param smartDriverLogic the agent's drive logic
-	 * @param parkingSearchLogic the agent's parking logic
+	 * @param parkingLogic the agent's parking logic
 	 */
 	public SmartAgentLogic(Plan plan1, Netsim simulation, SmartDriverLogic smartDriverLogic, ParkingSearchLogic parkingLogic) {
 		this.planIter = plan1.getPlanElements().iterator();

@@ -19,9 +19,7 @@ public class PerceptionConfigGroup extends ReflectiveConfigGroup {
 	private String wrapperClass;
 	private String cameraFile;
 
-	/**
-	 * @param name
-	 */
+
 	public PerceptionConfigGroup() {
 		super(GRUOPNAME);
 	}

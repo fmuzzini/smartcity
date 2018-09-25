@@ -36,10 +36,7 @@ public class Restrictions {
 	private static final String DEFAULT_OUTPUT_NAME = "NetworkWithRestriction";
 	private MemoryStorage storage;
 	private Network network;
-	/**
-	 * @param result
-	 * @param network
-	 */
+
 	public Restrictions(MemoryStorage storage, Network network) {
 		this.storage = storage;
 		this.network = network;
