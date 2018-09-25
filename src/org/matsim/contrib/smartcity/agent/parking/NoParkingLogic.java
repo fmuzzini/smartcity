@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.matsim.contrib.smartcity.agent;
+package org.matsim.contrib.smartcity.agent.parking;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;

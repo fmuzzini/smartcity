@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.matsim.contrib.parking.parkingsearch.evaluation.ParkingListener;
-import org.matsim.contrib.parking.parkingsearch.manager.FacilityBasedParkingManager;
 import org.matsim.contrib.parking.parkingsearch.manager.ParkingSearchManager;
 import org.matsim.contrib.parking.parkingsearch.manager.WalkLegFactory;
 import org.matsim.contrib.parking.parkingsearch.manager.vehicleteleportationlogic.VehicleTeleportationLogic;
 import org.matsim.contrib.parking.parkingsearch.manager.vehicleteleportationlogic.VehicleTeleportationToNearbyParking;
+import org.matsim.contrib.smartcity.agent.parking.FacilityWithMoreEntranceParkingManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.mobsim.qsim.AbstractQSimPlugin;
@@ -62,7 +62,7 @@ public class SmartAgentModule extends AbstractModule {
 	 */
 	@Override
 	public void install() {
-		bind(ParkingSearchManager.class).to(FacilityBasedParkingManager.class).asEagerSingleton();
+		bind(ParkingSearchManager.class).to(FacilityWithMoreEntranceParkingManager.class).asEagerSingleton();
 		bind(WalkLegFactory.class).asEagerSingleton();
 		addControlerListenerBinding().to(ParkingListener.class);
 		bind(VehicleTeleportationLogic.class).to(VehicleTeleportationToNearbyParking.class);
