@@ -11,6 +11,7 @@ import org.matsim.contrib.dynagent.DynAgent;
 import org.matsim.contrib.dynagent.DynAgentLogic;
 import org.matsim.contrib.parking.parkingsearch.search.ParkingSearchLogic;
 import org.matsim.contrib.smartcity.InstantationUtils;
+import org.matsim.contrib.smartcity.agent.parking.NoParkingLogic;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.qsim.agents.AgentFactory;
@@ -38,9 +39,10 @@ public class SmartAgentFactory implements AgentFactory {
 	
 	private static final String DRIVE_LOGIC_NAME = "drivelogic";
 	private static final String PARKING_LOGIC_NAME = "parkinglogic";
+	public static final String DRIVERLOGICATT = "driverlogic";
 	
-	private String DEFAULT_DRIVE_LOGIC = "agent.StaticDriverLogic";
-	private String DEFAULT_PARKING_LOGIC = "agent.NoParkingLogic";
+	private String DEFAULT_DRIVE_LOGIC = StaticDriverLogic.class.getCanonicalName();
+	private String DEFAULT_PARKING_LOGIC = NoParkingLogic.class.getCanonicalName();
 
 	/* (non-Javadoc)
 	 * @see org.matsim.core.mobsim.qsim.agents.AgentFactory#createMobsimAgentFromPerson(org.matsim.api.core.v01.population.Person)
@@ -52,13 +54,14 @@ public class SmartAgentFactory implements AgentFactory {
 		driveLogicClass = driveLogicClass != null ? driveLogicClass : DEFAULT_DRIVE_LOGIC;
 		parkingLogicClass = parkingLogicClass != null ? parkingLogicClass : DEFAULT_PARKING_LOGIC;
 		
-		SmartDriverLogic smartLogic = (SmartDriverLogic) InstantationUtils.instantiateForName(inj, driveLogicClass);
-		ParkingSearchLogic parkingLogic = (ParkingSearchLogic) InstantationUtils.instantiateForName(inj, parkingLogicClass);
+		SmartDriverLogic smartLogic = InstantationUtils.instantiateForName(inj, driveLogicClass);
+		ParkingSearchLogic parkingLogic = InstantationUtils.instantiateForName(inj, parkingLogicClass);
 		
 		DynAgentLogic agentLogic = new SmartAgentLogic(p.getSelectedPlan(), this.simulation, smartLogic, parkingLogic);
 		inj.injectMembers(agentLogic);
 		
 		Id<Link> startLinkId = ((Activity) p.getSelectedPlan().getPlanElements().get(0)).getLinkId();
+		p.getCustomAttributes().put(DRIVERLOGICATT, smartLogic);
 		
 		return new DynAgent(p.getId(), startLinkId, events, agentLogic);
 	}

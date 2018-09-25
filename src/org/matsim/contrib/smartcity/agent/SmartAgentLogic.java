@@ -191,6 +191,7 @@ public class SmartAgentLogic implements DynAgentLogic {
 	 *  @param now actual time
 	 *  @return the DynActivity
 	 */
+	@SuppressWarnings("deprecation")
 	private DynActivity getDynActivity(Activity act, double now) {
 		double endTime =act.getEndTime() ; 
 		double dur = act.getMaximumDuration();
