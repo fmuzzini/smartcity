@@ -32,7 +32,7 @@ public class CameraStartupListener implements StartupListener {
 		Injector inj = event.getServices().getInjector();
 		for (CameraData camera : cameraList) {
 			String className = camera.getClassName();
-			Object[] params = new Object[] {camera.getCameraId(), camera.getLinkId()};
+			Object[] params = {camera.getCameraId(), camera.getLinkId()};
 			InstantationUtils.instantiateForNameWithParams(inj, className, params);
 		}
 	}

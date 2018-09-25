@@ -14,41 +14,32 @@ import org.matsim.core.controler.AbstractModule;
  * @author Filippo Muzzini
  *
  */
-public class PerceptionQSimModule extends AbstractModule {
+public class SmartPerceptionModule extends AbstractModule {
 	
 	private static final String DEFAULT_WRAPPER_CLASS = "perception.wrapper.ActivePerceptionWrapperImpl";
-	
-	private Class<PassivePerceptionWrapper> perceptionClass;
-	
 
-	@SuppressWarnings("unchecked")
-	public PerceptionQSimModule(Config config) {
-		super();
-		
+	@Override
+	public void install() {		
+		Config config = getConfig();
+		if (!config.getModules().containsKey(PerceptionConfigGroup.GRUOPNAME)) {
+			return;
+		}
 		PerceptionConfigGroup cameraConfig = ConfigUtils.addOrGetModule(config, PerceptionConfigGroup.GRUOPNAME, PerceptionConfigGroup.class);
 		String className = cameraConfig.getWrapperClass();
 		className = className != null ? className : DEFAULT_WRAPPER_CLASS;
 		className = InstantationUtils.foundClassName(className);
-		try {
-			this.perceptionClass = (Class<PassivePerceptionWrapper>) Class.forName(className);
-		} catch (ClassNotFoundException e) {
-			System.err.println("Classe non trovata");
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void install() {		
+		Class<PassivePerceptionWrapper> perceptionClass = InstantationUtils.getClassForName(className);
+		
 		//bind the class to interfaces
-		bind(PassivePerceptionWrapper.class).to(this.perceptionClass);
+		bind(PassivePerceptionWrapper.class).to(perceptionClass);
 		try {
 			Class<? extends ActivePerceptionWrapper> activeClass = ActivePerceptionWrapper.class;
-			activeClass = this.perceptionClass.asSubclass(activeClass);
+			activeClass = perceptionClass.asSubclass(activeClass);
 			bind(ActivePerceptionWrapper.class).to(activeClass);
 		} catch (ClassCastException e) {
 		}
-		bind(this.perceptionClass).asEagerSingleton();
-		addEventHandlerBinding().to(this.perceptionClass);
+		bind(perceptionClass).asEagerSingleton();
+		addEventHandlerBinding().to(perceptionClass);
 		
 		addControlerListenerBinding().to(CameraStartupListener.class);
 	}

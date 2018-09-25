@@ -29,7 +29,7 @@ public class RunProvaPerception {
 		Controler controler = new Controler(scenario) ;
 		
 		//add perception module
-		controler.addOverridingModule(new PerceptionQSimModule(config));
+		controler.addOverridingModule(new SmartPerceptionModule());
 		
 		controler.run();
 	}
