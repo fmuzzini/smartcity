@@ -30,7 +30,7 @@ public class SmartSemaphoreModelFactory implements SignalModelFactory {
 
 	@Override
 	public SignalController createSignalSystemController(String controllerIdentifier, SignalSystem signalSystem) {
-		SignalController signalControl = (SignalController) InstantationUtils.instantiateForName(inj, controllerIdentifier);
+		SignalController signalControl = InstantationUtils.instantiateForName(inj, controllerIdentifier);
 		
 		signalControl.setSignalSystem(signalSystem);
 		return signalControl;		

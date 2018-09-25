@@ -27,7 +27,7 @@ import org.matsim.core.network.algorithms.NetworkTurnInfoBuilderI;
  *
  */
 public class SmartSemaphoreModule extends SignalsModule implements StartupListener {
-
+	
 	@Override
 	public void install() {
 		if ((boolean) ConfigUtils.addOrGetModule(getConfig(), SignalSystemsConfigGroup.GROUPNAME, SignalSystemsConfigGroup.class).isUseSignalSystems()) {
@@ -64,7 +64,8 @@ public class SmartSemaphoreModule extends SignalsModule implements StartupListen
 	public void notifyStartup(StartupEvent event) {
 		Config config = event.getServices().getConfig();
 		Scenario scenario = event.getServices().getScenario();
-		scenario.addScenarioElement(SignalsData.ELEMENT_NAME, new SignalsDataLoader(config).loadSignalsData());
+		SignalsData signalsData = new SignalsDataLoader(config).loadSignalsData();
+		scenario.addScenarioElement(SignalsData.ELEMENT_NAME, signalsData);
 	}
 
 }
