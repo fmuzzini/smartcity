@@ -49,7 +49,7 @@ public class SmartAgentModule extends AbstractModule {
 		if (config1.network().isTimeVariantNetwork()) {
 			plugins.add(new NetworkChangeEventsPlugin(config1));
 		}
-		if (config1.transit().isUseTransit() && config1.transit().isUsingTransitInMobsim() ) {
+		if (config1.transit().isUseTransit()) {
 			plugins.add(new TransitEnginePlugin(config1));
 		}
 		plugins.add(new TeleportationPlugin(config1));
