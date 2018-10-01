@@ -52,7 +52,7 @@
       <artifactId>signals</artifactId>
       <version>0.11.0-may18</version>
         <exclusions>
-        <exclusion>  <!-- declare the exclusion here -->
+        <exclusion>
           <groupId>org.matsim</groupId>
           <artifactId>matsim-examples</artifactId>
         </exclusion>
@@ -85,5 +85,10 @@
     	<scope>system</scope>
     	<systemPath>${project.basedir}/lib/OSMemory-1.11.jar</systemPath>
     </dependency>
+     <dependency>
+	     <groupId>org.reflections</groupId>
+	     <artifactId>reflections</artifactId>
+	     <version>0.9.9-RC1</version>
+     </dependency> 
   </dependencies>
 </project>

@@ -3,6 +3,7 @@
  */
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,11 +13,15 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.signals.model.Signal;
+import org.matsim.contrib.signals.model.SignalController;
+import org.matsim.contrib.signals.model.SignalSystem;
 import org.matsim.contrib.signals.model.SignalSystemsManager;
 import org.matsim.contrib.smartcity.accident.Bizzantine;
 import org.matsim.contrib.smartcity.accident.BizzantineRedSignal;
 import org.matsim.contrib.smartcity.accident.CarAccidentEvent;
 import org.matsim.contrib.smartcity.accident.PriorityBizzantine;
+import org.matsim.contrib.smartcity.actuation.semaphore.SmartSemaphoreController;
 import org.matsim.contrib.smartcity.agent.SmartAgentFactory;
 import org.matsim.contrib.smartcity.agent.SmartDriverLogic;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -24,6 +29,8 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.mobsim.framework.Mobsim;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.mobsim.qsim.interfaces.SignalizeableItem;
+import org.matsim.lanes.data.Lane;
+
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -37,6 +44,14 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
  */
 public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	
+	/**
+		 * @author Filippo Muzzini
+		 *
+		 */
+	public enum IncidentType {
+		Signal, Priority
+	}
+
 	/**
 	 * Bizzantine Type
 	 * @author Filippo Muzzini
@@ -54,6 +69,8 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 
 	private static final String PRIORITY_TYPE = "Priority";
 
+	private static final int DEFAULT_GREE_TIME = 0;
+
 	private TurnAcceptanceLogic signalDelegate = new SignalWithRightTurnAcceptanceLogic();
 	private TurnAcceptanceLogic priorityDelegate = new PriorityTurnAcceptanceLogic();
 	private TurnAcceptanceLogic basicDelegate = new DefaultTurnAcceptanceLogic();
@@ -64,12 +81,25 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	@Inject private Injector inj;
 	
 	private Set<Id<Link>> signalsSet;
+	private HashMap<Id<Lane>, SignalController> laneToControler = new HashMap<Id<Lane>, SignalController>();
 	
 	@Inject
 	public AccidentTurnAcceptanceLogic(SignalSystemsManager signalManager) {
 		this.signalsSet = signalManager.getSignalSystems().values().stream().
 				flatMap(ss -> ss.getSignals().values().stream()).map(s -> s.getLinkId()).collect(Collectors.toSet());
 				
+		for (SignalSystem system : signalManager.getSignalSystems().values()) {
+			SignalController controler = system.getSignalController();
+			for (Signal signal : system.getSignals().values()) {
+				Set<Id<Lane>> lanes = signal.getLaneIds();
+				if (lanes == null) {
+					continue;
+				}
+				for (Id<Lane> lane : lanes) {
+					laneToControler.put(lane, controler);
+				}
+			}
+		}
 	}
 	
 
@@ -137,10 +167,10 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	private boolean transitWithoutPriority(Link currentLink, Id<Link> nextLinkId, QVehicle veh, QNetwork qNetwork) {
 		Node node = currentLink.getToNode();
 		Set<QLaneI> qLanes = getAllLanes(node, currentLink, qNetwork);
-		boolean carAccident = isIncidentWithProb(qLanes, PRIORITY_INCIDENT_PROB);
+		double time = ((QSim)inj.getInstance(Mobsim.class)).getSimTimer().getTimeOfDay();
+		boolean carAccident = isIncidentWithProb(qLanes, time, PRIORITY_INCIDENT_PROB, IncidentType.Priority);
 		
 		if (carAccident) {
-			double time = ((QSim)inj.getInstance(Mobsim.class)).getSimTimer().getTimeOfDay();
 			carAccident(currentLink, nextLinkId, veh, null, PRIORITY_TYPE, time);
 		}
 		
@@ -175,28 +205,66 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		Set<QLaneI> qLanes = getGreenQLane(node, currentLink, qNetwork);
 		
 		//calc accident's probability
-		boolean carAccident = isIncidentWithProb(qLanes, RED_INCIDENT_PROB);
+		double time = ((QSim)inj.getInstance(Mobsim.class)).getSimTimer().getTimeOfDay();
+		boolean carAccident = isIncidentWithProb(qLanes, time, RED_INCIDENT_PROB, IncidentType.Signal);
 		
 		if (carAccident) {
-			double time = ((QSim)inj.getInstance(Mobsim.class)).getSimTimer().getTimeOfDay();
 			carAccident(currentLink, nextLinkId, veh, null, RED_TYPE, time);
 		}
 		
 		return carAccident;
 	}
 	
-	private double calcProbability(Set<QLaneI> qLanes, double prob) {
+	private double calcSignalProbability(Set<QLaneI> qLanes, double now, double prob) {
+		double totalTransitVeh = 0;
+		double totalCapacity = 0;
+		for (QLaneI qLane : qLanes) {
+			Id<Lane> laneId = qLane.getId();
+			SignalController controller = laneToControler.get(laneId);
+			double greenRemain;
+			if (controller instanceof SmartSemaphoreController) {
+				greenRemain = ((SmartSemaphoreController) controller).greenTimeResidualForLane(laneId, now);
+			} else {
+				greenRemain = DEFAULT_GREE_TIME / 2;
+			}
+			
+			int nVeh = qLane.getAllVehicles().size();
+			double maxTransitVeh = qLane.getSimulatedFlowCapacityPerTimeStep() * greenRemain;
+			totalTransitVeh += Double.min(nVeh, maxTransitVeh);
+			
+			totalCapacity += qLane.getStorageCapacity();
+		}
+
+		BinomialDistribution dist = new BinomialDistribution((int)totalCapacity, prob);
+		return dist.cumulativeProbability((int)totalTransitVeh);
+	}
+	
+	private boolean isIncidentWithProb(Set<QLaneI> qLanes, double now, double prob, IncidentType type) {
+		double threadshold;
+		switch (type) {
+			case Signal:
+				threadshold = calcSignalProbability(qLanes, now, prob);
+				break;
+			default:
+				threadshold = calcProbabilty(qLanes, prob);
+		}
+		
+		double r = MatsimRandom.getRandom().nextDouble();
+		return r <= threadshold;
+	}
+
+	/**
+	 * @param qLanes
+	 * @param prob
+	 * @return
+	 */
+	private double calcProbabilty(Set<QLaneI> qLanes, double prob) {
 		double transitVeh = qLanes.stream().mapToLong(l -> l.getAllVehicles().size()).sum();
 		double capacity = qLanes.stream().mapToDouble(l -> l.getStorageCapacity()).sum();
 		BinomialDistribution dist = new BinomialDistribution((int)capacity, prob);
 		return dist.cumulativeProbability((int)transitVeh);
 	}
-	
-	private boolean isIncidentWithProb(Set<QLaneI> qLanes, double prob) {
-		double threadshold = calcProbability(qLanes, prob);
-		double r = MatsimRandom.getRandom().nextDouble();
-		return r <= threadshold;
-	}
+
 
 	/**
 	 * @param currentLink

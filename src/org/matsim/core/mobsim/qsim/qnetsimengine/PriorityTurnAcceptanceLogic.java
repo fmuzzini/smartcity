@@ -68,6 +68,7 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 			}
 			
 			List<Link> giveWayRoads = getGiveWayRoads(links);
+			giveWayRoads.remove(currentLink);
 			return rightRule(currentLink, giveWayRoads, nextLinkId, qNetwork);
 		}
 		
@@ -123,7 +124,12 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 * @return
 	 */
 	private List<Link> getGiveWayRoads(Collection<? extends Link> links) {
-		return links.stream().filter(l -> l.getAttributes().getAttribute(PRIORITY_ATT).equals(GIVE_WAY)).collect(Collectors.toList());
+		return links.stream().filter(l -> {
+			String priority = (String) l.getAttributes().getAttribute(PRIORITY_ATT);
+			if (priority == null)
+				return false;
+			return priority.equals(GIVE_WAY);
+			}).collect(Collectors.toList());
 	}
 
 	/**
@@ -146,7 +152,12 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 * @return
 	 */
 	private List<Link> getNoGiveWayRoads(Collection<? extends Link> links) {
-		return links.stream().filter(l -> !l.getAttributes().getAttribute(PRIORITY_ATT).equals(GIVE_WAY)).collect(Collectors.toList());
+		return links.stream().filter(l -> {
+			String priority = (String) l.getAttributes().getAttribute(PRIORITY_ATT);
+			if (priority == null)
+				return true;
+			return !priority.equals(GIVE_WAY);
+			}).collect(Collectors.toList());
 	}
 
 	/**

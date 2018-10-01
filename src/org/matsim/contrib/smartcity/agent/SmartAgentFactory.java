@@ -37,8 +37,8 @@ public class SmartAgentFactory implements AgentFactory {
 	@Inject private Injector inj;
 	@Inject private EventsManager events;
 	
-	private static final String DRIVE_LOGIC_NAME = "drivelogic";
-	private static final String PARKING_LOGIC_NAME = "parkinglogic";
+	public static final String DRIVE_LOGIC_NAME = "drivelogic";
+	public static final String PARKING_LOGIC_NAME = "parkinglogic";
 	public static final String DRIVERLOGICATT = "driverlogic";
 	
 	private String DEFAULT_DRIVE_LOGIC = StaticDriverLogic.class.getCanonicalName();

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.smartcity.restriction.RestrictionsDijkstra;
+import org.matsim.contrib.smartcity.restriction.NetworkWithRestrictionTurnInfoBuilder;
 
 /**
  * Class that determinate if an agent can travers the link based on restrictions.
@@ -24,11 +24,19 @@ public class RestrictionTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	@Override
 	public AcceptTurn isAcceptingTurn(Link currentLink, QLaneI currentLane, Id<Link> nextLinkId, QVehicle veh,
 			QNetwork qNetwork) {
-		String restrStr = (String) currentLink.getAttributes().getAttribute(RestrictionsDijkstra.RESTRICTION_ATT);
+		Link nextLink = qNetwork.getNetwork().getLinks().get(nextLinkId);
+		
+		//U inversion allowed only when there isn't another way
+		boolean isU = currentLink.getFromNode() == nextLink.getToNode();
+		if (isU && currentLink.getToNode().getOutLinks().size() < 2) {
+			return AcceptTurn.ABORT;
+		}
+		
+		String restrStr = (String) currentLink.getAttributes().getAttribute(NetworkWithRestrictionTurnInfoBuilder.RESTRICTION_ATT);
 		if (restrStr == null ) {
 			return AcceptTurn.GO;
 		}
-		List<String> restrictions = Arrays.asList(restrStr.split(RestrictionsDijkstra.RESTRICTION_SEP));
+		List<String> restrictions = Arrays.asList(restrStr.split(NetworkWithRestrictionTurnInfoBuilder.RESTRICTION_SEP));
 		List<Id<Link>> restrictionLinks = restrictions.stream().map(Id::createLinkId).collect(Collectors.toList());
 		if (restrictionLinks.contains(nextLinkId)) {
 			return AcceptTurn.ABORT;

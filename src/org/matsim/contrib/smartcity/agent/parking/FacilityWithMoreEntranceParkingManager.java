@@ -3,9 +3,12 @@
  */
 package org.matsim.contrib.smartcity.agent.parking;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableLong;
@@ -90,6 +93,30 @@ public class FacilityWithMoreEntranceParkingManager extends FacilityBasedParking
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * @param parking
+	 * @return
+	 */
+	public double getNrOfFreeParkingSpaces(Id<ActivityFacility> parking) {
+		double cap = this.parkingFacilities.get(parking).getActivityOptions().get(ParkingUtils.PARKACTIVITYTYPE)
+				.getCapacity();
+		double occupation = this.occupation.get(parking).doubleValue();
+		
+		return cap - occupation;
+	}
+	
+	@Override
+	public List<String> produceStatistics() {
+		List<String> stats = new ArrayList<>();
+		for (Entry<Id<ActivityFacility>, MutableLong> e : this.occupation.entrySet()) {
+			double capacity = this.parkingFacilities.get(e.getKey()).getActivityOptions()
+					.get(ParkingUtils.PARKACTIVITYTYPE).getCapacity();
+			String s = e.getKey().toString() + ";" + capacity + ";" + e.getValue().toString();
+			stats.add(s);
+		}
+		return stats;
 	}
 
 }

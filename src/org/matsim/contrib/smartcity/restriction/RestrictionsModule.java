@@ -4,7 +4,7 @@
 package org.matsim.contrib.smartcity.restriction;
 
 import org.matsim.core.controler.AbstractModule;
-import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.network.algorithms.NetworkTurnInfoBuilderI;
 import org.matsim.contrib.smartcity.scenariocreation.RestrictionsFromOSM;
 
 /**
@@ -22,8 +22,9 @@ public class RestrictionsModule extends AbstractModule {
 	 */
 	@Override
 	public void install() {
-		bind(LeastCostPathCalculatorFactory.class).to(LeastCostPathCalculatorWithRestrictionsFactory.class);
-
+		if (getConfig().controler().isLinkToLinkRoutingEnabled()) {
+			bind(NetworkTurnInfoBuilderI.class).to(NetworkWithRestrictionTurnInfoBuilder.class);
+		}
 	}
 
 }

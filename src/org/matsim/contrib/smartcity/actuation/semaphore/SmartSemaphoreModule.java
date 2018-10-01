@@ -10,7 +10,7 @@ import org.matsim.contrib.signals.controler.SignalsModule;
 import org.matsim.contrib.signals.data.SignalsData;
 import org.matsim.contrib.signals.data.SignalsDataLoader;
 import org.matsim.contrib.signals.mobsim.QSimSignalEngine;
-import org.matsim.contrib.signals.router.NetworkWithSignalsTurnInfoBuilder;
+import org.matsim.contrib.smartcity.restriction.NetworkWithRestrictionTurnInfoBuilder;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.events.StartupEvent;
@@ -52,8 +52,10 @@ public class SmartSemaphoreModule extends SignalsModule implements StartupListen
 		if (getConfig().controler().isLinkToLinkRoutingEnabled()){
 			//use the extended NetworkWithSignalsTurnInfoBuilder (instead of NetworkTurnInfoBuilder)
 			//michalm, jan'17
-			bind(NetworkTurnInfoBuilderI.class).to(NetworkWithSignalsTurnInfoBuilder.class);
+			bind(NetworkTurnInfoBuilderI.class).to(NetworkWithRestrictionTurnInfoBuilder.class);
 		}
+		
+		
 
 	}
 
@@ -62,8 +64,19 @@ public class SmartSemaphoreModule extends SignalsModule implements StartupListen
 	 */
 	@Override
 	public void notifyStartup(StartupEvent event) {
-		Config config = event.getServices().getConfig();
 		Scenario scenario = event.getServices().getScenario();
+		createScenarioElement(scenario);
+	}
+	
+	/**
+	 * 
+	 * @param scenario
+	 */
+	public static void createScenarioElement(Scenario scenario) {
+		if (scenario.getScenarioElement(SignalsData.ELEMENT_NAME) != null) {
+			return;
+		}
+		Config config = scenario.getConfig();
 		SignalsData signalsData = new SignalsDataLoader(config).loadSignalsData();
 		scenario.addScenarioElement(SignalsData.ELEMENT_NAME, signalsData);
 	}

@@ -150,6 +150,7 @@ public class ScenarioFromOsm {
 		controler.setFirstIteration(0);
 		controler.setLastIteration(10);
 		controler.setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+		controler.setLinkToLinkRoutingEnabled(true);
 		configGroups.add(controler);
 		
 		QSimConfigGroup qsim = new QSimConfigGroup();

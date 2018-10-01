@@ -2,8 +2,10 @@ package org.matsim.contrib.smartcity.actuation.semaphore;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -12,6 +14,7 @@ import org.matsim.contrib.signals.model.SignalController;
 import org.matsim.contrib.signals.model.SignalGroup;
 import org.matsim.contrib.signals.model.SignalPlan;
 import org.matsim.contrib.signals.model.SignalSystem;
+import org.matsim.lanes.data.Lane;
 
 /**
  * A simple logic for SmartSemaphore without communication
@@ -32,6 +35,7 @@ public class SmartSemaphoreController implements SignalController {
 	private double lastChange;
 	private PriorityQueue<SemaphoreTime> queue;
 	private List<Id<Link>> controlledLink;
+	private HashMap<Id<Lane>, SignalGroup> laneToGroup = new HashMap<Id<Lane>, SignalGroup>();
 
 	@Override
 	public void updateState(double timeSeconds) {
@@ -85,12 +89,34 @@ public class SmartSemaphoreController implements SignalController {
 		this.initControlledLink();
 	}
 	
+	public double greenTimeResidualForLane(Id<Lane> lane, double now) {
+		SignalGroup group = laneToGroup.get(lane);
+		return calcGroupGreenTime(group) - (now - lastChange);
+	}
+	
+	/**
+	 * @param group
+	 * @return
+	 */
+	private double calcGroupGreenTime(SignalGroup group) {
+		if (!group.getId().equals(actualGreen)) {
+			return Double.NaN;
+		}
+		
+		return this.minimunGreenTime;
+		
+	}
+
 	private void initControlledLink() {
 		this.controlledLink = new ArrayList<Id<Link>>();
 		for (SignalGroup group : this.system.getSignalGroups().values()) {
 			for (Signal signal :group.getSignals().values()) {
 				Id<Link> linkId = signal.getLinkId();
 				this.controlledLink.add(linkId);
+				Set<Id<Lane>> lanes = signal.getLaneIds();
+				if (lanes != null) {
+					lanes.stream().forEach(l -> laneToGroup.put(l, group));
+				}
 			}
 		}
 	}

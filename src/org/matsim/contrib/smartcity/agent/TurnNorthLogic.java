@@ -17,13 +17,25 @@ import com.google.inject.Inject;
  */
 public class TurnNorthLogic extends AbstractDriverLogic {
 
+	private static final int MAX_TRAVERSED = 10;
+	
 	@Inject private Network network;
 	private Id<Link> nextLinkId;
+	private int traversed = 0;
 	
 	@Override
 	public Id<Link> getNextLinkId() {
-		doRight();
+		if (traversed >= MAX_TRAVERSED) {
+			return null;
+		}
 		return nextLinkId;
+	}
+	
+	@Override
+	public void setActualLink(Id<Link> linkId) {
+		super.setActualLink(linkId);
+		traversed ++;
+		doRight();
 	}
 
 	/**

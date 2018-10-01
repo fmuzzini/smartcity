@@ -17,7 +17,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.smartcity.restriction.RestrictionsDijkstra;
+import org.matsim.contrib.smartcity.restriction.NetworkWithRestrictionTurnInfoBuilder;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.NetworkWriter;
 
@@ -106,10 +106,10 @@ public class Restrictions {
 	 */
 	private void setAttributeRestriction(Id<Link> fromLink, Id<Link> toLink) {
 		Link from = network.getLinks().get(fromLink);
-		String restrs = (String) from.getAttributes().getAttribute(RestrictionsDijkstra.RESTRICTION_ATT);
-		restrs = restrs != null ? restrs+RestrictionsDijkstra.RESTRICTION_SEP : "";
+		String restrs = (String) from.getAttributes().getAttribute(NetworkWithRestrictionTurnInfoBuilder.RESTRICTION_ATT);
+		restrs = restrs != null ? restrs+NetworkWithRestrictionTurnInfoBuilder.RESTRICTION_SEP : "";
 		restrs = restrs + toLink;
-		from.getAttributes().putAttribute(RestrictionsDijkstra.RESTRICTION_ATT, restrs);
+		from.getAttributes().putAttribute(NetworkWithRestrictionTurnInfoBuilder.RESTRICTION_ATT, restrs);
 	}
 
 	/**
