@@ -188,11 +188,16 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 			double angle = getAngle(currentLink, link);
 			if (angle < nextLinkAngle && angle < Math.PI*2) {
 				priorityLinks.add(link);
+				continue;
 			}
 			
 			//actual implementetion of QLinkImpl offering the same qland as accepting
 			QVehicle other = qNetwork.getNetsimLink(link.getId()).getAcceptingQLane().getFirstVehicle();
-			Link otherNextLink = network.getLinks().get(other.getDriver().chooseNextLinkId());
+			if (other == null) {
+				continue;
+			}
+			Id<Link> otherNextLinkId = other.getDriver().chooseNextLinkId();
+			Link otherNextLink = network.getLinks().get(otherNextLinkId);
 			if (angle > Math.PI*2 && angle < nextLinkAngle && !intersect(currentLink, nextLink, link, otherNextLink)) {
 				priorityLinks.add(link);
 			}
@@ -216,7 +221,7 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	private static boolean intersect(Link from1, Link to1, Link from2, Link to2) {
 		double angle = getAngle(from2, to2);
 		
-		//if turn right no intersection because we assume that veh 1 turn left.
+		//if turn left no intersection because we assume that veh 1 turn left.
 		//can be generalized
 		if (angle >= Math.PI) {
 			return false;
@@ -234,28 +239,48 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	}
 
 	private static double getAngle(Link link1, Link link2) {
-		Coord coordInLink = getVector(link1);
-		double thetaInLink = Math.atan2(coordInLink.getY(), coordInLink.getX());
-
-		if (!(link2.getToNode().equals(link1.getFromNode()))){
-			Coord coordOutLink = getVector(link2);
-			double thetaOutLink = Math.atan2(coordOutLink.getY(), coordOutLink.getX());
-			double thetaDiff = thetaOutLink - thetaInLink;
-			/*if (thetaDiff < -Math.PI){
-				thetaDiff += 2 * Math.PI;
-			} else if (thetaDiff > Math.PI){
-				thetaDiff -= 2 * Math.PI;
-			}*/
-			//want the right angle
-			return Double.valueOf(2*Math.PI-thetaDiff);
+		if (link2.getToNode().equals(link1.getFromNode())) {
+			return 2*Math.PI;
 		}
+		Coord coordInLink = getInVector(link1);
+		double thetaInLink = getPositiveAngle(coordInLink);
+
+		Coord coordOutLink;
+		if (link2.getToNode().equals(link1.getToNode())) {
+			coordOutLink = getInVector(link2);
+		} else {
+			coordOutLink = getOutVector(link2);
+		}
+		double thetaOutLink = getPositiveAngle(coordOutLink);
+		double thetaDiff = thetaOutLink - thetaInLink;
+		//want the right angle
+		//thetaDiff = (2*Math.PI-thetaDiff);
+		/*if (thetaDiff < -Math.PI){
+			thetaDiff += 2 * Math.PI;
+		} else if (thetaDiff > Math.PI){
+			thetaDiff -= 2 * Math.PI;
+		}*/
+		return thetaDiff;
 		
-		return Double.NaN;
 	}
 	
-	private static Coord getVector(Link link){
+	private static double getPositiveAngle(Coord coord) {
+		double angle = Math.atan2(coord.getY(), coord.getX());
+		if (angle < 0) {
+			angle = 2*Math.PI + angle;
+		}
+		return angle;
+	}
+	
+	private static Coord getOutVector(Link link){
 		double x = link.getToNode().getCoord().getX() - link.getFromNode().getCoord().getX();
 		double y = link.getToNode().getCoord().getY() - link.getFromNode().getCoord().getY();
+		return new Coord(x, y);
+	}
+	
+	private static Coord getInVector(Link link){
+		double x = link.getFromNode().getCoord().getX() - link.getToNode().getCoord().getX();
+		double y = link.getFromNode().getCoord().getY() - link.getToNode().getCoord().getY();
 		return new Coord(x, y);
 	}
 
