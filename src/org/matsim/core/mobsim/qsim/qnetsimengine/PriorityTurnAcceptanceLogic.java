@@ -58,6 +58,7 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		String priority = (String) currentLink.getAttributes().getAttribute(PRIORITY_ATT);
 		if (priority != null && priority.equals(PRIORITY_ROAD)) {
 			List<Link> priorityRoads = getPriorityRoads(links);
+			priorityRoads.remove(currentLink);
 			return rightRule(currentLink, priorityRoads, nextLinkId, qNetwork);
 		}
 		
@@ -235,7 +236,10 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 * @return
 	 */
 	private List<Link> getPriorityRoads(Collection<? extends Link> links) {
-		return links.stream().filter(l -> l.getAttributes().getAttribute(PRIORITY_ATT).equals(PRIORITY_ROAD)).collect(Collectors.toList());
+		return links.stream().filter(l -> {
+			String priority = (String) l.getAttributes().getAttribute(PRIORITY_ATT);
+			return priority != null ? priority.equals(PRIORITY_ROAD) : false;
+			}).collect(Collectors.toList());
 	}
 
 	private static double getAngle(Link link1, Link link2) {
