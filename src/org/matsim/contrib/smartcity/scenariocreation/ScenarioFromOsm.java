@@ -23,6 +23,7 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.PlansConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup;
+import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.network.NetworkUtils;
@@ -152,6 +153,10 @@ public class ScenarioFromOsm {
 		controler.setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		controler.setLinkToLinkRoutingEnabled(true);
 		configGroups.add(controler);
+		
+		TravelTimeCalculatorConfigGroup travelCalc = new TravelTimeCalculatorConfigGroup();
+		travelCalc.setCalculateLinkToLinkTravelTimes(true);
+		configGroups.add(travelCalc);
 		
 		QSimConfigGroup qsim = new QSimConfigGroup();
 		qsim.setStartTime(0);
