@@ -64,15 +64,14 @@ public class RandomPlansCreation {
 	 */
 	public static void main(String[] args) {
 		if (args.length < 2) {
-			System.err.println("need the input matsim netwrok and number of agents and config file");
+			System.err.println("need the input number of agents and config file");
 			System.exit(1);
 		}
-		String networkFile = args[0];
-		int agents = Integer.parseInt(args[1]);
-		String configFile = args[2];
+		int agents = Integer.parseInt(args[0]);
+		String configFile = args[1];
 		String outputFile;
-		if (args.length > 3) {
-			outputFile = args[3];
+		if (args.length > 2) {
+			outputFile = args[2];
 		} else {
 			outputFile = DEFAULT_OUTPUT_FILE;
 		}

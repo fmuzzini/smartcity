@@ -3,14 +3,9 @@
  */
 package org.matsim.contrib.smartcity.agent;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.matsim.core.config.Config;
-import org.matsim.core.mobsim.qsim.PopulationPlugin;
+import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.agents.AgentFactory;
 import org.matsim.core.mobsim.qsim.agents.PopulationAgentSource;
-import com.google.inject.Module;
 
 /**
  * Plugin for MATSim that bind the agent factory to SmartAgentFactory
@@ -19,22 +14,20 @@ import com.google.inject.Module;
  * @author Filippo Muzzini
  *
  */
-public class SmartPopulationPlugin extends PopulationPlugin {
+public class SmartPopulationPlugin extends AbstractQSimModule {
+	public final static String SMART_POPULATION_AGENT_SOURCE_NAME = "PopulationAgentSource";
 
-	
-	public SmartPopulationPlugin(Config config) {
-		super(config);
-	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.matsim.core.mobsim.qsim.AbstractQSimModule#configureQSim()
+	 */
 	@Override
-	public Collection<? extends Module> modules() {
-		return Collections.singletonList(new com.google.inject.AbstractModule() {
-			@Override
-			protected void configure() {
-				bind(PopulationAgentSource.class).asEagerSingleton();
-				bind(AgentFactory.class).to(SmartAgentFactory.class).asEagerSingleton();
-			}
-		});
+	protected void configureQSim() {
+		bind(AgentFactory.class).to(SmartAgentFactory.class).asEagerSingleton(); // (**)
+		bind(PopulationAgentSource.class).asEagerSingleton();
+		
+		bindAgentSource(SMART_POPULATION_AGENT_SOURCE_NAME).to(PopulationAgentSource.class);
+		
 	}
 
 }

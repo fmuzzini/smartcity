@@ -14,7 +14,7 @@ import org.matsim.contrib.signals.model.SignalController;
 import org.matsim.contrib.signals.model.SignalGroup;
 import org.matsim.contrib.signals.model.SignalPlan;
 import org.matsim.contrib.signals.model.SignalSystem;
-import org.matsim.lanes.data.Lane;
+import org.matsim.lanes.Lane;
 
 /**
  * A simple logic for SmartSemaphore without communication

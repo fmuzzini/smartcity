@@ -52,7 +52,7 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 */
 	@Override
 	public AcceptTurn isAcceptingTurn(Link currentLink, QLaneI currentLane, Id<Link> nextLinkId, QVehicle veh,
-			QNetwork qNetwork) {
+			QNetwork qNetwork, double now) {
 		Collection<? extends Link> links = currentLink.getToNode().getInLinks().values();
 		
 		String priority = (String) currentLink.getAttributes().getAttribute(PRIORITY_ATT);

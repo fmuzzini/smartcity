@@ -23,7 +23,7 @@ public class SignalWithRightTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 */
 	@Override
 	public AcceptTurn isAcceptingTurn(Link currentLink, QLaneI currentLane, Id<Link> nextLinkId, QVehicle veh,
-			QNetwork qNetwork) {
+			QNetwork qNetwork, double now) {
 		
 		if ( (currentLane instanceof SignalizeableItem) && 
 				(! ((SignalizeableItem)currentLane).hasGreenForToLink(nextLinkId)) ) {

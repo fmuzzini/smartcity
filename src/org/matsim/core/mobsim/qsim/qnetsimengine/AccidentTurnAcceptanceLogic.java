@@ -26,14 +26,10 @@ import org.matsim.contrib.smartcity.agent.SmartAgentFactory;
 import org.matsim.contrib.smartcity.agent.SmartDriverLogic;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.core.mobsim.framework.Mobsim;
-import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.mobsim.qsim.interfaces.SignalizeableItem;
-import org.matsim.lanes.data.Lane;
+import org.matsim.lanes.Lane;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
-
 import org.apache.commons.math3.distribution.BinomialDistribution;
 
 /**
@@ -78,8 +74,6 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	
 	@Inject private Scenario scenario;
 	@Inject private EventsManager events;
-	@Inject private Injector inj;
-	
 	private Set<Id<Link>> signalsSet;
 	private HashMap<Id<Lane>, SignalController> laneToControler = new HashMap<Id<Lane>, SignalController>();
 	
@@ -108,13 +102,13 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 */
 	@Override
 	public AcceptTurn isAcceptingTurn(Link currentLink, QLaneI currentLane, Id<Link> nextLinkId, QVehicle veh,
-			QNetwork qNetwork) {
-		AcceptTurn basicTurn = basicDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork);
+			QNetwork qNetwork, double now) {
+		AcceptTurn basicTurn = basicDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork, now);
 		if (basicTurn.equals(AcceptTurn.ABORT)) {
 			return basicTurn;
 		}
 		
-		AcceptTurn restrictionTurn = restrictionDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork);
+		AcceptTurn restrictionTurn = restrictionDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork, now);
 		if (restrictionTurn.equals(AcceptTurn.ABORT)) {
 			return restrictionTurn;
 		}
@@ -122,10 +116,10 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		AcceptTurn turn;
 		BizzantineType bizzantineType;
 		if (signalsSet.contains(currentLink.getId())) {
-			turn = signalDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork);
+			turn = signalDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork, now);
 			bizzantineType = BizzantineType.Signal;
 		} else {
-			turn = priorityDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork);
+			turn = priorityDelegate.isAcceptingTurn(currentLink, currentLane, nextLinkId, veh, qNetwork, now);
 			bizzantineType = BizzantineType.Priority;
 		}
 		
@@ -143,14 +137,14 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		if (bizzantineType == BizzantineType.Signal && logic instanceof BizzantineRedSignal) {
 			BizzantineRedSignal bizzantine = (BizzantineRedSignal) logic;
 			if (bizzantine.transitOnRed()) {
-				carAccident = transitOnRed(currentLink, nextLinkId, veh, qNetwork);
+				carAccident = transitOnRed(currentLink, nextLinkId, veh, qNetwork, now);
 			}
 		}
 		
 		if (bizzantineType == BizzantineType.Priority && logic instanceof PriorityBizzantine) {
 			PriorityBizzantine bizzantine = (PriorityBizzantine) logic;
 			if (bizzantine.transitWithOutPriority()) {
-				carAccident = transitWithoutPriority(currentLink, nextLinkId, veh, qNetwork);
+				carAccident = transitWithoutPriority(currentLink, nextLinkId, veh, qNetwork, now);
 			}
 		}
 		
@@ -164,14 +158,13 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	/**
 	 * @return
 	 */
-	private boolean transitWithoutPriority(Link currentLink, Id<Link> nextLinkId, QVehicle veh, QNetwork qNetwork) {
+	private boolean transitWithoutPriority(Link currentLink, Id<Link> nextLinkId, QVehicle veh, QNetwork qNetwork, double now) {
 		Node node = currentLink.getToNode();
 		Set<QLaneI> qLanes = getAllLanes(node, currentLink, qNetwork);
-		double time = ((QSim)inj.getInstance(Mobsim.class)).getSimTimer().getTimeOfDay();
-		boolean carAccident = isIncidentWithProb(qLanes, time, PRIORITY_INCIDENT_PROB, IncidentType.Priority);
+		boolean carAccident = isIncidentWithProb(qLanes, now, PRIORITY_INCIDENT_PROB, IncidentType.Priority);
 		
 		if (carAccident) {
-			carAccident(currentLink, nextLinkId, veh, null, PRIORITY_TYPE, time);
+			carAccident(currentLink, nextLinkId, veh, null, PRIORITY_TYPE, now);
 		}
 		
 		return carAccident;
@@ -200,16 +193,15 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 * @param currentLane
 	 * @param veh
 	 */
-	private boolean transitOnRed(Link currentLink, Id<Link> nextLinkId, QVehicle veh, QNetwork qNetwork) {
+	private boolean transitOnRed(Link currentLink, Id<Link> nextLinkId, QVehicle veh, QNetwork qNetwork, double now) {
 		Node node = currentLink.getToNode();
 		Set<QLaneI> qLanes = getGreenQLane(node, currentLink, qNetwork);
 		
 		//calc accident's probability
-		double time = ((QSim)inj.getInstance(Mobsim.class)).getSimTimer().getTimeOfDay();
-		boolean carAccident = isIncidentWithProb(qLanes, time, RED_INCIDENT_PROB, IncidentType.Signal);
+		boolean carAccident = isIncidentWithProb(qLanes, now, RED_INCIDENT_PROB, IncidentType.Signal);
 		
 		if (carAccident) {
-			carAccident(currentLink, nextLinkId, veh, null, RED_TYPE, time);
+			carAccident(currentLink, nextLinkId, veh, null, RED_TYPE, now);
 		}
 		
 		return carAccident;

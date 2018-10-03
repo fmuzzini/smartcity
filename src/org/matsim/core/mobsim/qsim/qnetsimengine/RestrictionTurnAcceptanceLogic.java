@@ -23,7 +23,7 @@ public class RestrictionTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 */
 	@Override
 	public AcceptTurn isAcceptingTurn(Link currentLink, QLaneI currentLane, Id<Link> nextLinkId, QVehicle veh,
-			QNetwork qNetwork) {
+			QNetwork qNetwork, double now) {
 		Link nextLink = qNetwork.getNetwork().getLinks().get(nextLinkId);
 		
 		//U inversion allowed only when there isn't another way
