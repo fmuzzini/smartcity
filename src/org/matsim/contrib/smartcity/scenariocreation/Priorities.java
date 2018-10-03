@@ -40,6 +40,8 @@ public class Priorities {
 	private static final String PRIORITY_END = "end";
 	private static final String DEFAULT_OUTPUT_DIR = ".";
 	private static final String DEFAULT_OUTPUT_NAME = "networkWithPriority.xml";
+	private static final String JUNCTION_TAG = "junction";
+	private static final Object ROUNDABOUT = "roundabout";
 	
 	
 	private MemoryStorage storage;
@@ -48,6 +50,7 @@ public class Priorities {
 	private short prority_tag;
 	private short priority_forward_tag;
 	private short priority_backward_tag;
+	private short junction_tag;
 
 
 	public Priorities(MemoryStorage storage, Network network) {
@@ -55,6 +58,7 @@ public class Priorities {
 		this.network = network;
 		this.highway_tag = storage.getTagsPack().getTagCode(HIGHWAY_KEY);
 		this.prority_tag = storage.getTagsPack().getTagCode(PRIORITY_TAG);
+		this.junction_tag = storage.getTagsPack().getTagCode(JUNCTION_TAG);
 		this.priority_backward_tag = storage.getTagsPack().getTagCode(PRIORITY_BACKWARD_TAG);
 		this.priority_forward_tag = storage.getTagsPack().getTagCode(PRIORITY_FORWARD_TAG);
 		processStopAndGiveWay();
@@ -109,7 +113,9 @@ public class Priorities {
 		
 		//priority way
 		String priority = way.getTag(prority_tag);
-		if (priority != null && !priority.equals(PRIORITY_END)) {
+		String junction = way.getTag(junction_tag);
+		if ((priority != null && !priority.equals(PRIORITY_END))
+				|| (junction !=null && junction.equals(ROUNDABOUT))) {
 			setAttributeToLinks(links, PriorityTurnAcceptanceLogic.PRIORITY_ATT, PriorityTurnAcceptanceLogic.PRIORITY_ROAD);
 		}
 		
