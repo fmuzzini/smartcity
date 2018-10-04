@@ -28,7 +28,7 @@ import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.NetworkWriter;
-import org.matsim.core.utils.geometry.transformations.WGS84toAtlantis;
+import org.matsim.core.utils.geometry.transformations.GeotoolsTransformation;
 import org.matsim.core.utils.io.OsmNetworkReader;
 
 /**
@@ -44,7 +44,8 @@ public class ScenarioFromOsm {
 	private static final String FACILITIES_FILE = "facilities.xml";
 	private static final String CONFIG_FILE = "config.xml";
 	private static final long RANDOM_SEED = 4711;
-	private static final String COORDINATE_SYTEM = "Atlantis";
+	private static final String COORDINATE_SYSTEM_FROM = "WGS84";
+	private static final String COORDINATE_SYTEM_TO = "EPSG:3003";
 	private static final String TO_SET = "TO_SET";
 	private static final String OUTPUT_DIR = "./output";
 	private static final String HOME = "h";
@@ -84,7 +85,7 @@ public class ScenarioFromOsm {
 		
 		//read network from osm file
 		Network network = NetworkUtils.createNetwork();
-		OsmNetworkReader reader = new OsmNetworkReaderWithReverse(network, new WGS84toAtlantis(), true, false);
+		OsmNetworkReader reader = new OsmNetworkReaderWithReverse(network, new GeotoolsTransformation(COORDINATE_SYSTEM_FROM, COORDINATE_SYTEM_TO), true, false);
 		reader.parse(osmFile);
 		
 		//add restrictions
@@ -139,7 +140,7 @@ public class ScenarioFromOsm {
 	private static void addBasicGroups(ArrayList<ConfigGroup> configGroups) {
 		GlobalConfigGroup global = new GlobalConfigGroup();
 		global.setRandomSeed(RANDOM_SEED);
-		global.setCoordinateSystem(COORDINATE_SYTEM);
+		global.setCoordinateSystem(COORDINATE_SYTEM_TO);
 		configGroups.add(global);
 		
 		PlansConfigGroup plans = new PlansConfigGroup();
