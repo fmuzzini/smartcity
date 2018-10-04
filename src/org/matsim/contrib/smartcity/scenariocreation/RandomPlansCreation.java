@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -55,9 +56,11 @@ public class RandomPlansCreation {
 
 	private static final String DEFAULT_OUTPUT_FILE = "plans.xml";
 	private static final String HOME_ACT = "h";
-	private static final int MAX_MORNING_DEP = 43200;
-	private static final int MAX_WORK_DUR = 28800;
 	private static final String WORK_ACT = "w";
+	private static final double WORK_DUR_MEAN = 3600*8;
+	private static final double WORK_DUR_VAR = 3600*1;
+	private static final double MORNIGNG_DEP_MEAN = 3600*8;
+	private static final double MORNIGN_DEP_VAR = 3600*0.6;
 
 	/**
 	 * @param args
@@ -116,8 +119,8 @@ public class RandomPlansCreation {
 				
 			} while (!found);
 			
-			double morningDep = MatsimRandom.getRandom().nextInt(MAX_MORNING_DEP);
-			double workDur = MatsimRandom.getRandom().nextInt(MAX_WORK_DUR);
+			double morningDep = getMorningDep();
+			double workDur = getWorkDur();
 			
 			Person person = factory.createPerson(Id.createPersonId(i));
 			person.getAttributes().putAttribute(SmartAgentFactory.DRIVE_LOGIC_NAME, StaticDriverLogic.class.getCanonicalName());
@@ -142,6 +145,22 @@ public class RandomPlansCreation {
 		PopulationWriter writer = new PopulationWriter(population);
 		writer.write(outputFile);
 		
+	}
+
+	/**
+	 * @return
+	 */
+	private static double getWorkDur() {
+		NormalDistribution dist = new NormalDistribution(WORK_DUR_MEAN, WORK_DUR_VAR);
+		return dist.sample();
+	}
+
+	/**
+	 * @return
+	 */
+	private static double getMorningDep() {
+		NormalDistribution dist = new NormalDistribution(MORNIGNG_DEP_MEAN, MORNIGN_DEP_VAR);
+		return dist.sample();
 	}
 
 	/**
