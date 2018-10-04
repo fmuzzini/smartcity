@@ -257,6 +257,9 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		}
 		double thetaOutLink = getPositiveAngle(coordOutLink);
 		double thetaDiff = thetaOutLink - thetaInLink;
+		if (thetaDiff < 0) {
+			thetaDiff = 2*Math.PI + thetaDiff;
+		}
 		//want the right angle
 		//thetaDiff = (2*Math.PI-thetaDiff);
 		/*if (thetaDiff < -Math.PI){
