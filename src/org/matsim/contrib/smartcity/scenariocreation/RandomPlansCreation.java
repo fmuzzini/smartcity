@@ -5,6 +5,7 @@ package org.matsim.contrib.smartcity.scenariocreation;
 
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.smartcity.agent.SmartAgentFactory;
@@ -57,10 +59,9 @@ public class RandomPlansCreation {
 	private static final String DEFAULT_OUTPUT_FILE = "plans.xml";
 	private static final String HOME_ACT = "h";
 	private static final String WORK_ACT = "w";
-	private static final double WORK_DUR_MEAN = 3600*8;
-	private static final double WORK_DUR_VAR = 3600*1;
-	private static final double MORNIGNG_DEP_MEAN = 3600*8;
-	private static final double MORNIGN_DEP_VAR = 3600*0.6;
+	private static final double WORK_END_MEAN = 3600*18;
+	private static final double WORK_VAR = 3600*1;
+	private static final double WORK_START_MEAN = 3600*9;
 
 	/**
 	 * @param args
@@ -93,6 +94,7 @@ public class RandomPlansCreation {
 		//Population population = scenario.getPopulation();
 		
 		
+		double routeDur = 0;
 		RoutingModule routing = getRouting(factory, network, scenario);
 		ActivityFacilitiesFactoryImpl activityFac = new ActivityFacilitiesFactoryImpl();		
 		for (int i=0; i<agents; i++) {
@@ -110,26 +112,31 @@ public class RandomPlansCreation {
 				facHome = activityFac.createActivityFacility(null, home.getId());
 				facWork = activityFac.createActivityFacility(null, work.getId());
 				try {
-					routing.calcRoute(facHome, facWork, 0, null);
+					List<? extends PlanElement> morningPlan = routing.calcRoute(facHome, facWork, 0, null);
 					routing.calcRoute(facWork, facHome, 0, null);
 					found = true;
+					routeDur = ((Leg)morningPlan.get(0)).getTravelTime();
 				} catch (RuntimeException e) {
 					
 				}
 				
 			} while (!found);
 			
-			double morningDep = getMorningDep();
-			double workDur = getWorkDur();
+			//double workDur = getWorkDur();
+			double workStart = getWorkStart();
+			double workEnd = getWorkEnd();
+			double morningDep = workStart - routeDur;
 			
 			Person person = factory.createPerson(Id.createPersonId(i));
 			person.getAttributes().putAttribute(SmartAgentFactory.DRIVE_LOGIC_NAME, StaticDriverLogic.class.getCanonicalName());
 			Plan plan = factory.createPlan();
 			Activity homeAct1 = factory.createActivityFromLinkId(HOME_ACT, home.getId());
-			homeAct1.setEndTime(morningDep);
+			homeAct1.setMaximumDuration(morningDep);
 			Activity homeAct2 = factory.createActivityFromLinkId(HOME_ACT, home.getId());
 			Activity workAct = factory.createActivityFromLinkId(WORK_ACT, work.getId());
-			workAct.setMaximumDuration(workDur);
+			//workAct.setMaximumDuration(workDur);
+			workAct.setStartTime(workStart);
+			workAct.setEndTime(workEnd);
 			Leg legToWork = factory.createLeg(TransportMode.car);
 			Leg legToHome = factory.createLeg(TransportMode.car);
 			
@@ -150,16 +157,16 @@ public class RandomPlansCreation {
 	/**
 	 * @return
 	 */
-	private static double getWorkDur() {
-		NormalDistribution dist = new NormalDistribution(WORK_DUR_MEAN, WORK_DUR_VAR);
+	private static double getWorkStart() {
+		NormalDistribution dist = new NormalDistribution(WORK_START_MEAN, WORK_VAR);
 		return dist.sample();
 	}
 
 	/**
 	 * @return
 	 */
-	private static double getMorningDep() {
-		NormalDistribution dist = new NormalDistribution(MORNIGNG_DEP_MEAN, MORNIGN_DEP_VAR);
+	private static double getWorkEnd() {
+		NormalDistribution dist = new NormalDistribution(WORK_END_MEAN, WORK_VAR);
 		return dist.sample();
 	}
 
