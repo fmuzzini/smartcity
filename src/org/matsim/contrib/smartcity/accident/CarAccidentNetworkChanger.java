@@ -5,14 +5,18 @@ package org.matsim.contrib.smartcity.accident;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
+import org.matsim.core.mobsim.qsim.QSim;
+import org.matsim.core.network.NetworkChangeEvent;
+
 import com.google.inject.Inject;
 
 /**
@@ -21,18 +25,14 @@ import com.google.inject.Inject;
  * @author Filippo Muzzini
  *
  */
-public class CarAccidentNetworkChanger implements AccidentEventHandler, MobsimBeforeSimStepListener, MobsimBeforeCleanupListener {
+public class CarAccidentNetworkChanger implements AccidentEventHandler,  MobsimBeforeSimStepListener, MobsimBeforeCleanupListener {
 	
-	private static final double LIMITING_TIME = 1500;
+	private static final double LIMITING_TIME = 3000;
 
 	@Inject private Network network;
+	private QSim sim;
 	
-	private ArrayList<LimitedLink> limitedLinks = new ArrayList<LimitedLink>();
-	
-	@Inject
-	public CarAccidentNetworkChanger(EventsManager events) {
-		events.addHandler(this);
-	}
+	private ConcurrentHashMap<Link, LimitedLink> limitedLinks = new ConcurrentHashMap<Link, LimitedLink>();
 
 	/* (non-Javadoc)
 	 * @see org.matsim.contrib.smartcity.accident.AccidentEventHandler#handleEvent(org.matsim.contrib.smartcity.accident.CarAccidentEvent)
@@ -46,24 +46,49 @@ public class CarAccidentNetworkChanger implements AccidentEventHandler, MobsimBe
 		involvedLinks.add(network.getLinks().get(e.getToId()));
 		
 		for (Link link : involvedLinks) {
-			LimitedLink limitedLink = new LimitedLink(link, startTime, involvedCars);
-			this.limitedLinks.add(limitedLink);
+			if (link == null) {
+				continue;
+			}
+			
+			if (limitedLinks.containsKey(link)) {
+				//LimitedLink limited = limitedLinks.get(link);
+				//limited.startTime = startTime;
+				//limited.involvedCars += involvedCars;
+				return;
+			} else {
+				LimitedLink limitedLink = new LimitedLink(link, startTime, involvedCars);
+				this.limitedLinks.put(link, limitedLink);
+			}
 		}
 	}
 	
 	private void doSimStep(double now) {
-		for (LimitedLink limited : limitedLinks) {
+		NetworkChangeEvent ev = new NetworkChangeEvent(now);
+		boolean change = false;
+		for (LimitedLink limited : limitedLinks.values()) {
 			Link link = limited.getLink();
 			double startTime = limited.getStartTime();
 			int involvedCars = limited.getInvolvedCars();
 			
+			double actualCap = limited.actualCap;
 			double capacityRatio = calcFlow(startTime, now, involvedCars);
-			if (capacityRatio == 1) {
-				limitedLinks.remove(limited);
-				return;
-			}
 			double newCapacity = limited.getStartCapacity() * capacityRatio;
+			if (actualCap == newCapacity) {
+				continue;
+			}
 			link.setCapacity(newCapacity);
+			limited.actualCap = newCapacity;
+			
+			ev.addLink(link);	
+			change = true;
+			
+			if (capacityRatio == 1) {
+				limitedLinks.remove(link);
+			}
+		}
+		
+		if (change) {
+			sim.addNetworkChangeEvent(ev);
 		}
 	}
 	
@@ -103,6 +128,7 @@ public class CarAccidentNetworkChanger implements AccidentEventHandler, MobsimBe
 		private double startTime;
 		private int involvedCars;
 		private double startCapacity;
+		private double actualCap;
 		
 		/**
 		 * @param link
@@ -115,6 +141,7 @@ public class CarAccidentNetworkChanger implements AccidentEventHandler, MobsimBe
 			this.involvedCars = involvedCars;
 			
 			this.startCapacity = link.getCapacity();
+			this.actualCap = startCapacity;
 		}
 
 		public Link getLink() {
@@ -141,6 +168,7 @@ public class CarAccidentNetworkChanger implements AccidentEventHandler, MobsimBe
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void notifyMobsimBeforeSimStep(MobsimBeforeSimStepEvent e) {
+		this.sim = (QSim) e.getQueueSimulation();
 		double now = e.getSimulationTime();
 		doSimStep(now);
 	}
@@ -152,6 +180,10 @@ public class CarAccidentNetworkChanger implements AccidentEventHandler, MobsimBe
 	@Override
 	public void notifyMobsimBeforeCleanup(MobsimBeforeCleanupEvent e) {
 		limitedLinks.clear();
+	}
+	
+	public List<Link> getLimitedLinks() {
+		return limitedLinks.keySet().stream().collect(Collectors.toList());
 	}
 
 }

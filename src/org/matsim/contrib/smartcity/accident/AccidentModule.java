@@ -24,6 +24,7 @@ public class AccidentModule extends AbstractModule {
 	public void install() {
 		bind(TurnAcceptanceLogic.class).to(AccidentTurnAcceptanceLogic.class);
 		addMobsimListenerBinding().to(CarAccidentNetworkChanger.class);
+		addEventHandlerBinding().to(CarAccidentNetworkChanger.class);
 		bind(CarAccidentNetworkChanger.class).asEagerSingleton();
 		
 		try {
@@ -31,6 +32,12 @@ public class AccidentModule extends AbstractModule {
 		} catch (RuntimeException e) {
 			bind(QSignalsNetworkFactory.class).to(SmartNetworkFactory.class);
 		}
+		
+		addMobsimListenerBinding().to(LinkAccident.class);
+		addEventHandlerBinding().to(AccidentWriter.class);
+		addControlerListenerBinding().to(AccidentWriter.class);
+		bind(AccidentWriter.class).asEagerSingleton();
+		
 	}
 
 }
