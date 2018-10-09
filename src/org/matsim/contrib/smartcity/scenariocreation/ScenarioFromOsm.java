@@ -45,7 +45,7 @@ public class ScenarioFromOsm {
 	private static final String CONFIG_FILE = "config.xml";
 	private static final long RANDOM_SEED = 4711;
 	private static final String COORDINATE_SYSTEM_FROM = "WGS84";
-	private static final String COORDINATE_SYTEM_TO = "EPSG:3003";
+	private static final String COORDINATE_SYTEM_TO = "EPSG:32632";
 	private static final String TO_SET = "TO_SET";
 	private static final String OUTPUT_DIR = "./output";
 	private static final String HOME = "h";
@@ -73,6 +73,7 @@ public class ScenarioFromOsm {
 			outputDir = DEFAULT_OUTPUT_DIR;
 		}
 		
+		boolean keepPaths = true;
 		
 		XMLReader readerXml = new XMLReader();
 		MemoryStorage result = null;
@@ -85,7 +86,7 @@ public class ScenarioFromOsm {
 		
 		//read network from osm file
 		Network network = NetworkUtils.createNetwork();
-		OsmNetworkReader reader = new OsmNetworkReaderWithReverse(network, new GeotoolsTransformation(COORDINATE_SYSTEM_FROM, COORDINATE_SYTEM_TO), true, false);
+		OsmNetworkReader reader = new OsmNetworkReaderWithReverse(network, new GeotoolsTransformation(COORDINATE_SYSTEM_FROM, COORDINATE_SYTEM_TO), true, false, keepPaths);
 		reader.parse(osmFile);
 		
 		//add restrictions
@@ -110,6 +111,7 @@ public class ScenarioFromOsm {
 		networkWriter.write(networkFile);
 		NetworkConfigGroup networkConfigGroup = new NetworkConfigGroup();
 		networkConfigGroup.setInputFile(NETWORK_FILE);
+		networkConfigGroup.setTimeVariantNetwork(true);
 		configGroups.add(networkConfigGroup);		
 		
 		//write facilities file

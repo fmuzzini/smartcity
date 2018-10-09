@@ -26,8 +26,9 @@ public class OsmNetworkReaderWithReverse extends OsmNetworkReader {
 	 * @param useVspAdjustments
 	 */
 	public OsmNetworkReaderWithReverse(Network network, CoordinateTransformation transformation,
-			boolean useHighwayDefaults, boolean useVspAdjustments) {
+			boolean useHighwayDefaults, boolean useVspAdjustments, boolean keepPaths) {
 		super(network, transformation, useHighwayDefaults, useVspAdjustments);
+		setKeepPaths(keepPaths);
 	}
 	
 	@Override
