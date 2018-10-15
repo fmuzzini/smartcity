@@ -28,7 +28,7 @@ public class RestrictionTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		
 		//U inversion allowed only when there isn't another way
 		boolean isU = currentLink.getFromNode() == nextLink.getToNode();
-		if (isU && currentLink.getToNode().getOutLinks().size() < 2) {
+		if (isU && currentLink.getToNode().getOutLinks().size() > 1) {
 			return AcceptTurn.ABORT;
 		}
 		
