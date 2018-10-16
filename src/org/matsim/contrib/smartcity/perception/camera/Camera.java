@@ -20,8 +20,7 @@ public abstract class Camera {
 	 * @param idCameraStr arbitrary id for camera
 	 * @param linkId id of link that camera watch
 	 */
-	public Camera(String idCameraStr, Id<Link> linkId) {
-		Id<Camera> idCamera = Id.create(idCameraStr, Camera.class);
+	public Camera(Id<Camera> idCamera, Id<Link> linkId) {
 		this.status = new CameraStatus(idCamera, linkId);
 	}
 	

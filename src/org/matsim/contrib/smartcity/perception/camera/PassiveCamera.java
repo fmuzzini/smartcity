@@ -15,7 +15,7 @@ public class PassiveCamera extends Camera {
 
 	private PassivePerceptionWrapper wrapper;
 
-	public PassiveCamera(String idCameraStr, Id<Link> linkId, PassivePerceptionWrapper wrapper) {
+	public PassiveCamera(Id<Camera> idCameraStr, Id<Link> linkId, PassivePerceptionWrapper wrapper) {
 		super(idCameraStr, linkId);
 		this.wrapper = wrapper;
 	}

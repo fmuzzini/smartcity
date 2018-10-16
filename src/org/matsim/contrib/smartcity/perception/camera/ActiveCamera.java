@@ -16,7 +16,7 @@ import org.matsim.contrib.smartcity.perception.wrapper.LinkTrafficStatus;
  */
 public class ActiveCamera extends Camera implements LinkChangedListener {
 	
-	private ArrayList<CameraListener> cameraListeners;
+	private ArrayList<CameraListener> cameraListeners = new ArrayList<CameraListener>();
 	private ActivePerceptionWrapper wrapper;
 	
 	/**
@@ -26,7 +26,7 @@ public class ActiveCamera extends Camera implements LinkChangedListener {
 	 * @param linkId id of link that camera watch
 	 * @param wrapper the perception wrapper to utilize
 	 */
-	public ActiveCamera(String idCamera, Id<Link> linkId, ActivePerceptionWrapper wrapper) {
+	public ActiveCamera(Id<Camera> idCamera, Id<Link> linkId, ActivePerceptionWrapper wrapper) {
 		super(idCamera, linkId);
 		this.wrapper = wrapper;
 		this.wrapper.addLinkChangedListener(this, linkId);
