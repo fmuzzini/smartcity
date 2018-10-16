@@ -10,18 +10,12 @@ import java.util.Set;
  * @author Filippo Muzzini
  *
  */
-public interface ComunicationClient {
+public interface ComunicationClient extends ComunicationEntity {
 	
 	/**
 	 * Return the set of reachable servers
 	 * 
 	 */
 	public Set<ComunicationServer> discover();
-	
-	/**
-	 * Called by other communications entities for send a message to this agent
-	 * @param message
-	 */
-	public void sendToMe(ComunicationMessage message);
 
 }

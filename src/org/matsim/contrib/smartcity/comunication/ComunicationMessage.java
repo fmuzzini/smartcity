@@ -10,14 +10,14 @@ package org.matsim.contrib.smartcity.comunication;
  */
 public class ComunicationMessage {
 
-	private ComunicationClient sender;
+	private ComunicationEntity sender;
 	
-	public ComunicationMessage(ComunicationClient sender) {
+	public ComunicationMessage(ComunicationEntity sender) {
 		this.sender = sender;
 	}
 
 
-	public ComunicationClient getSender() {
+	public ComunicationEntity getSender() {
 		return this.sender;
 	}
 
