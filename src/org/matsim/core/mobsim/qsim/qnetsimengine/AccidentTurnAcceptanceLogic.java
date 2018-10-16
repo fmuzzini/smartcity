@@ -3,6 +3,7 @@
  */
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.dynagent.DynAgent;
 import org.matsim.contrib.signals.model.Signal;
 import org.matsim.contrib.signals.model.SignalController;
 import org.matsim.contrib.signals.model.SignalSystem;
@@ -21,16 +23,17 @@ import org.matsim.contrib.smartcity.accident.Bizzantine;
 import org.matsim.contrib.smartcity.accident.BizzantineRedSignal;
 import org.matsim.contrib.smartcity.accident.CarAccidentEvent;
 import org.matsim.contrib.smartcity.accident.PriorityBizzantine;
-import org.matsim.contrib.smartcity.actuation.semaphore.SmartSemaphoreController;
+import org.matsim.contrib.smartcity.agent.AutonomousSpeed;
 import org.matsim.contrib.smartcity.agent.SmartAgentFactory;
+import org.matsim.contrib.smartcity.agent.SmartAgentLogic;
 import org.matsim.contrib.smartcity.agent.SmartDriverLogic;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.interfaces.SignalizeableItem;
 import org.matsim.lanes.Lane;
 
 import com.google.inject.Inject;
-import org.apache.commons.math3.distribution.BinomialDistribution;
 
 /**
  * Class that determinate if an agent can travers the link (using delegates).
@@ -65,7 +68,11 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 
 	private static final String PRIORITY_TYPE = "Priority";
 
-	private static final int DEFAULT_GREE_TIME = 0;
+	private static final int SECONDS_IN_YEAR = 3600*24*365;
+
+	private static final int LAMBDA_RED = 1902 / SECONDS_IN_YEAR;
+
+	private static final int LAMBDA_PRIORITY = 30460 / SECONDS_IN_YEAR;
 
 	private TurnAcceptanceLogic signalDelegate = new SignalWithRightTurnAcceptanceLogic();
 	private TurnAcceptanceLogic priorityDelegate = new PriorityTurnAcceptanceLogic();
@@ -207,38 +214,67 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		return carAccident;
 	}
 	
-	private double calcSignalProbability(Set<QLaneI> qLanes, double now, double prob) {
-		double totalTransitVeh = 0;
-		double totalCapacity = 0;
+	private double calcSignalProbability(Set<QLaneI> qLanes, double now) {
+		double totalProb = 0;
 		for (QLaneI qLane : qLanes) {
-			Id<Lane> laneId = qLane.getId();
-			SignalController controller = laneToControler.get(laneId);
-			double greenRemain;
-			if (controller instanceof SmartSemaphoreController) {
-				greenRemain = ((SmartSemaphoreController) controller).greenTimeResidualForLane(laneId, now);
-			} else {
-				greenRemain = DEFAULT_GREE_TIME / 2;
+			ArrayList<MobsimVehicle> vehs = (ArrayList<MobsimVehicle>) qLane.getAllVehicles();
+//			Id<Lane> laneId = qLane.getId();
+//			SignalController controller = laneToControler.get(laneId);
+//			double greenRemain;
+//			if (controller instanceof SmartSemaphoreController) {
+//				greenRemain = ((SmartSemaphoreController) controller).greenTimeResidualForLane(laneId, now);
+//			} else {
+//				greenRemain = DEFAULT_GREE_TIME / 2;
+//			}
+			
+			for (MobsimVehicle veh : vehs) {
+				double maxSpeed = veh.getCurrentLink().getFreespeed(now);
+				double speed = maxSpeed;
+				if (veh instanceof QVehicle) {
+					QVehicle qVeh = (QVehicle) veh;
+					double earliest = qVeh.getEarliestLinkExitTime();
+					if (earliest > now+2) {
+						break;
+					}
+					double dist = veh.getCurrentLink().getLength();
+					double time = now - qVeh.getLinkEnterTime();
+					speed = dist / time;
+				}
+				
+				if (veh.getDriver() instanceof DynAgent){
+					DynAgent dyn = (DynAgent) veh.getDriver();
+					if (dyn.getAgentLogic() instanceof SmartAgentLogic) {
+						SmartAgentLogic smart = (SmartAgentLogic) dyn.getAgentLogic();
+						if (smart.getActualLogic() instanceof AutonomousSpeed)
+						speed = ((AutonomousSpeed) smart.getActualLogic()).getSpeed();
+					}
+				}
+				double ratio = probRatioBySpeed(speed, maxSpeed);
+				totalProb += LAMBDA_RED / SECONDS_IN_YEAR * ratio;
 			}
 			
-			int nVeh = qLane.getAllVehicles().size();
-			double maxTransitVeh = qLane.getSimulatedFlowCapacityPerTimeStep() * greenRemain;
-			totalTransitVeh += Double.min(nVeh, maxTransitVeh);
-			
-			totalCapacity += qLane.getStorageCapacity();
 		}
 
-		BinomialDistribution dist = new BinomialDistribution((int)totalCapacity, prob);
-		return dist.cumulativeProbability((int)totalTransitVeh);
+		return totalProb;
 	}
 	
+	/**
+	 * @param speed
+	 * @return
+	 */
+	private double probRatioBySpeed(double speed, double maxSpeed) {
+		return speed / maxSpeed;
+	}
+
+
 	private boolean isIncidentWithProb(Set<QLaneI> qLanes, double now, double prob, IncidentType type) {
 		double threadshold;
 		switch (type) {
 			case Signal:
-				threadshold = calcSignalProbability(qLanes, now, prob);
+				threadshold = calcSignalProbability(qLanes, now);
 				break;
 			default:
-				threadshold = calcProbabilty(qLanes, prob);
+				threadshold = calcPriorityProbabilty(qLanes);
 		}
 		
 		double r = MatsimRandom.getRandom().nextDouble();
@@ -250,11 +286,10 @@ public class AccidentTurnAcceptanceLogic implements TurnAcceptanceLogic {
 	 * @param prob
 	 * @return
 	 */
-	private double calcProbabilty(Set<QLaneI> qLanes, double prob) {
+	private double calcPriorityProbabilty(Set<QLaneI> qLanes) {
 		double transitVeh = qLanes.stream().mapToLong(l -> l.getAllVehicles().size()).sum();
-		double capacity = qLanes.stream().mapToDouble(l -> l.getStorageCapacity()).sum();
-		BinomialDistribution dist = new BinomialDistribution((int)capacity, prob);
-		return dist.cumulativeProbability((int)transitVeh);
+		double prob = LAMBDA_PRIORITY / SECONDS_IN_YEAR;
+		return prob * transitVeh;
 	}
 
 

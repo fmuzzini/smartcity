@@ -91,6 +91,14 @@ public class SmartAgentLogic implements DynAgentLogic {
 	public DynAgent getDynAgent() {
 		return this.agent;
 	}
+	
+	public Object getActualLogic() {
+		if (this.state == SmartAgentLogicState.PARKING_SEARCH) {
+			return this.parkingLogic;
+		} else {
+			return this.smartDriverLogic;
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.matsim.contrib.dynagent.DynAgentLogic#computeInitialActivity(org.matsim.contrib.dynagent.DynAgent)
