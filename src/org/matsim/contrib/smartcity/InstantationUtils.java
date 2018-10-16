@@ -5,7 +5,12 @@ package org.matsim.contrib.smartcity;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.reflections.ReflectionUtils;
 
 import com.google.inject.Injector;
 
@@ -21,6 +26,17 @@ public class InstantationUtils {
 	 * The class is searched in this package
 	 */
 	private static final String DEFAULT_PACKAGE = "org.matsim.contrib.smartcity";
+	
+	public static HashMap<Class<?>, String> getParamName(String className) {
+		Class<?> cl = getClassForName(className);
+		Constructor<?> con = getMinConstructor(cl);
+		HashMap<Class<?>, String> res = new HashMap<Class<?>, String>();
+		for (Parameter param : con.getParameters()) {
+			res.put(param.getType(), param.getName());
+		}
+		
+		return res;
+	}
 	
 	/**
 	 * Instantiate the class defined in the name using the constructor with less number
@@ -79,7 +95,42 @@ public class InstantationUtils {
 		int i = 0;
 		for (Class<?> type : constructor.getParameterTypes()) {
 			Object obj = paramsType.get(type);
+			if (obj == null) {
+				for (Class<?> t : paramsType.keySet()) {
+					Set<Class<?>> s = ReflectionUtils.getAllSuperTypes(t);
+					if (s.contains(type)) {
+						obj = paramsType.get(t);
+						break;
+					}
+				}
+			}
 			obj = obj != null ? obj : inj.getInstance(type);
+			paramsObj[i] = obj;
+			i++;
+		}
+				
+		return instantiateClassWithConstructorAndParams(inj, constructor, paramsObj);
+	}
+	
+	/**
+	 * Instantiate the class defined in the name using the constructor with less number
+	 * of parameters and use the params specified. The non specified params are fell using
+	 * injector.
+	 * If the name don't contains the package, the default package is used.
+	 * 
+	 * @param inj injector
+	 * @param name name of class
+	 * @param params specified params
+	 * @return instantiated object
+	 */
+	public static <T> T instantiateForNameWithParams(Injector inj, String name, Map<String, Object> params) {		
+		Class<T> cl = getClassForName(name);
+		Constructor<T> constructor = getMinConstructor(cl);
+		Object[] paramsObj = new Object[constructor.getParameterTypes().length];
+		int i = 0;
+		for (Parameter param : constructor.getParameters()) {
+			Object obj = params.get(param.getName());
+			obj = obj != null ? obj : inj.getInstance(param.getType());
 			paramsObj[i] = obj;
 			i++;
 		}
