@@ -7,8 +7,10 @@ import java.net.URL;
 import java.util.Set;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.smartcity.InstantationUtils;
 import org.matsim.contrib.smartcity.comunication.wrapper.ComunicationWrapper;
+import org.matsim.contrib.smartcity.perception.camera.Camera;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
@@ -68,6 +70,7 @@ public class ComunicationModule extends AbstractModule implements StartupListene
 		}
 		
 		ComunicationServerListXMLReader reader = new ComunicationServerListXMLReader();
+		event.getServices().getInjector().injectMembers(reader);
 		URL fileURL = ConfigGroup.getInputFileURL(config.getContext(), serverList);
 		reader.readFile(fileURL.getFile());
 		
@@ -77,7 +80,8 @@ public class ComunicationModule extends AbstractModule implements StartupListene
 			String serverId = server.getFirst();
 			String serverClass = server.getSecond();
 			Set<Coord> coord = reader.getServerCoord(server);
-			factory.instantiateServer(serverId, serverClass, coord);
+			Set<Id<Camera>> cameras = reader.getServerCameras(server);
+			factory.instantiateServer(serverId, serverClass, coord, cameras);
 		}
 		
 	}

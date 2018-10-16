@@ -1,7 +1,16 @@
 <!ELEMENT servers (server*) >
 
-<!ELEMENT server (coord*) >
+<!ELEMENT server (comunication?, perception?) >
 <!ATTLIST server id ID #REQUIRED class CDATA #REQUIRED >
+
+<!ELEMENT comunication (coord*) >
+<!ATTLIST comunication all CDATA #IMPLIED >
 
 <!ELEMENT coord EMPTY >
 <!ATTLIST coord x CDATA #REQUIRED y CDATA #REQUIRED >
+
+<!ELEMENT perception (camera*) >
+<!ATTLIST perception all CDATA #IMPLIED >
+
+<!ELEMENT camera EMPTY>
+<!ATTLIST camera id ID #REQUIRED >
