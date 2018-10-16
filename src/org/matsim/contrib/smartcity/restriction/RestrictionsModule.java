@@ -24,6 +24,7 @@ public class RestrictionsModule extends AbstractModule {
 	public void install() {
 		if (getConfig().controler().isLinkToLinkRoutingEnabled()) {
 			bind(NetworkTurnInfoBuilderI.class).to(NetworkWithRestrictionTurnInfoBuilder.class);
+			bind(NetworkWithRestrictionTurnInfoBuilder.class).asEagerSingleton();
 		}
 	}
 
