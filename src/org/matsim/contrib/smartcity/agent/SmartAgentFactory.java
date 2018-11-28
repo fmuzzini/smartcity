@@ -60,10 +60,15 @@ public class SmartAgentFactory implements AgentFactory {
 		DynAgentLogic agentLogic = new SmartAgentLogic(p.getSelectedPlan(), this.simulation, smartLogic, parkingLogic);
 		inj.injectMembers(agentLogic);
 		
+		
 		Id<Link> startLinkId = ((Activity) p.getSelectedPlan().getPlanElements().get(0)).getLinkId();
 		p.getCustomAttributes().put(DRIVERLOGICATT, smartLogic);
 		
-		return new DynAgent(p.getId(), startLinkId, events, agentLogic);
+		DynAgent agent = new DynAgent(p.getId(), startLinkId, events, agentLogic);
+		smartLogic.setPerson(p);
+		smartLogic.setAgent(agent);
+		
+		return agent;
 	}
 
 }

@@ -51,7 +51,7 @@ public class SmartSemaphoreController implements SignalController {
 		Id<SignalGroup> nextGreen = sTime.getSignalGroup();
 		
 		this.system.scheduleOnset(timeSeconds, nextGreen);
-		if (this.actualGreen != null)
+		if (this.actualGreen != null && this.actualGreen != nextGreen)
 			this.system.scheduleDropping(timeSeconds, this.actualGreen);
 		
 		this.actualGreen = nextGreen;

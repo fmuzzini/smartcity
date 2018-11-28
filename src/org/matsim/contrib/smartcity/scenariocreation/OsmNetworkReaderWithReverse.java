@@ -36,5 +36,13 @@ public class OsmNetworkReaderWithReverse extends OsmNetworkReader {
 		String direction = forwardDirection ? FORWARD : BACKWARD;
 		l.getAttributes().putAttribute(DIRECTION_ATT, direction);
 	}
+	
+	public static void computeCap(Network network) {
+		for (Link link : network.getLinks().values()) {
+			double lenght = link.getLength();
+			double nlanes = link.getNumberOfLanes();
+			link.setCapacity(lenght * nlanes / 4.0 * network.getCapacityPeriod()); 
+		}
+	}
 
 }

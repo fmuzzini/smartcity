@@ -79,6 +79,10 @@ public class RandomPlansCreation {
 		} else {
 			outputFile = DEFAULT_OUTPUT_FILE;
 		}
+		String agentClass = StaticDriverLogic.class.getCanonicalName();
+		if (args.length > 3) {
+			agentClass = args[3];
+		}
 		
 		Config config = ConfigUtils.loadConfig(configFile);
 		//Network network = NetworkUtils.createNetwork();
@@ -128,7 +132,7 @@ public class RandomPlansCreation {
 			double morningDep = workStart - routeDur;
 			
 			Person person = factory.createPerson(Id.createPersonId(i));
-			person.getAttributes().putAttribute(SmartAgentFactory.DRIVE_LOGIC_NAME, StaticDriverLogic.class.getCanonicalName());
+			person.getAttributes().putAttribute(SmartAgentFactory.DRIVE_LOGIC_NAME, agentClass);
 			Plan plan = factory.createPlan();
 			Activity homeAct1 = factory.createActivityFromLinkId(HOME_ACT, home.getId());
 			homeAct1.setMaximumDuration(morningDep);

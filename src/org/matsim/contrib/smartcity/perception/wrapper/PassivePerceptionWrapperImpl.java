@@ -2,7 +2,6 @@ package org.matsim.contrib.smartcity.perception.wrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
@@ -108,6 +107,14 @@ public class PassivePerceptionWrapperImpl implements PassivePerceptionWrapper {
 	private Id<VehicleType> typeFromVehicle(Id<Vehicle> idVehicle) {
 		Id<VehicleType> type = this.vehicles.get(idVehicle).getType().getId();
 		return type;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.matsim.contrib.smartcity.perception.wrapper.PassivePerceptionWrapper#getTrafficMap()
+	 */
+	@Override
+	public HashMap<Id<Link>, LinkTrafficStatus> getTrafficMap() {
+		return this.trafficMap;
 	}
 
 }

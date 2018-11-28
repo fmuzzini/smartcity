@@ -8,6 +8,7 @@ import org.matsim.contrib.signals.otfvis.OTFVisWithSignalsLiveModule;
 import org.matsim.contrib.smartcity.accident.AccidentModule;
 import org.matsim.contrib.smartcity.actuation.semaphore.SmartSemaphoreModule;
 import org.matsim.contrib.smartcity.agent.SmartAgentModule;
+import org.matsim.contrib.smartcity.analisys.AnalisysModule;
 import org.matsim.contrib.smartcity.comunication.ComunicationModule;
 import org.matsim.contrib.smartcity.perception.SmartPerceptionModule;
 import org.matsim.contrib.smartcity.restriction.RestrictionsModule;
@@ -59,9 +60,12 @@ public class RunSmartcity {
 		//add restriction module
 		controler.addOverridingModule(new RestrictionsModule());
 		
+		controler.addOverridingModule(new AnalisysModule());
+		
 		//add vis module
 		if (config.getModules().containsKey(OTFVisConfigGroup.GROUP_NAME)) {
 			ConfigUtils.addOrGetModule(config, OTFVisConfigGroup.class);
+			
 			//controler.addOverridingModule(new OTFVisLiveModule());
 			/*controler.addOverridingModule(new AbstractModule() {
 				

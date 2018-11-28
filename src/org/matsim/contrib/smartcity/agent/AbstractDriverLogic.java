@@ -6,7 +6,9 @@ package org.matsim.contrib.smartcity.agent;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Route;
+import org.matsim.core.mobsim.qsim.pt.MobsimDriverPassengerAgent;
 
 /**
  * Abstract class that implements a standard behavior of SmartDriverLogic.
@@ -27,6 +29,8 @@ public abstract class AbstractDriverLogic implements SmartDriverLogic {
 	protected Id<Link> startLink;
 	protected Id<Link> endLink;
 	protected Route route;
+	protected MobsimDriverPassengerAgent agent;
+	protected Person person;
 
 	@Override
 	public abstract Id<Link> getNextLinkId();
@@ -73,6 +77,16 @@ public abstract class AbstractDriverLogic implements SmartDriverLogic {
 	@Override
 	public Double getDistance() {
 		return this.route.getDistance();
+	}
+	
+	@Override
+	public void setAgent(MobsimDriverPassengerAgent agent) {
+		this.agent = agent;
+	}
+	
+	@Override
+	public void setPerson(Person p) {
+		this.person = p;
 	}
 
 }

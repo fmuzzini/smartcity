@@ -46,6 +46,18 @@ public class StaticDriverLogic extends AbstractDriverLogic {
 		this.index = 0;
 	}
 	
+	protected List<Id<Link>> getLinksList() {
+		return this.linksList;
+	}
+	
+	protected void setLinksList(List<Id<Link>> linksList) {
+		this.linksList = linksList;
+	}
+	
+	protected int getActualIndex() {
+		return this.index;
+	}
+	
 	@Override
 	public void setActualLink(Id<Link> actualLink) {
 		super.setActualLink(actualLink);

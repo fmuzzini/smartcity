@@ -6,7 +6,9 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.matsim.api.core.v01.Coord;
@@ -208,6 +210,31 @@ public class PriorityTurnAcceptanceLogic implements TurnAcceptanceLogic {
 		if (areFree(priorityLinks, qNetwork)) {
 			return AcceptTurn.GO;
 		} else {
+			//if others that i must do priority must give me priority there is a deadlock
+			Stack<Link> toCheck = new Stack<Link>();
+			toCheck.addAll(priorityLinks);
+			while (!toCheck.isEmpty()) {
+				Link link = toCheck.pop();
+				QVehicle other = qNetwork.getNetsimLink(link.getId()).getAcceptingQLane().getFirstVehicle();
+				if (other == null) {
+					continue;
+				}
+				Link nextLinkOther = network.getLinks().get(other.getDriver().chooseNextLinkId());
+				if (nextLinkOther == null) continue;
+				double nextLinkAngleOther = getAngle(link, nextLinkOther);
+				double angle = getAngle(link, currentLink);
+				if (angle < nextLinkAngleOther && angle < Math.PI*2) {
+					return AcceptTurn.GO;
+				}
+				for (Link pLink : inRoads) {
+					if (pLink == link) continue;
+					double pAngle = getAngle(link, pLink);
+					if (pAngle < nextLinkAngleOther && pAngle < Math.PI*2) {
+						toCheck.add(pLink);
+					}
+				}
+			}
+			
 			return AcceptTurn.WAIT;
 		}
 	}

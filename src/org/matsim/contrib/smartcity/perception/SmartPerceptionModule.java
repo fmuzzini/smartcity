@@ -41,6 +41,10 @@ public class SmartPerceptionModule extends AbstractModule {
 		bind(perceptionClass).asEagerSingleton();
 		addEventHandlerBinding().to(perceptionClass);
 		
+		bind(FlowWriter.class).asEagerSingleton();
+		addControlerListenerBinding().to(FlowWriter.class);
+		addMobsimListenerBinding().to(FlowWriter.class);
+		
 		bind(CamerasContainer.class).asEagerSingleton();;		
 		addControlerListenerBinding().to(CameraStartupListener.class);
 	}

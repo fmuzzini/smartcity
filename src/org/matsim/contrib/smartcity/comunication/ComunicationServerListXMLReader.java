@@ -12,6 +12,8 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.smartcity.agent.parking.CameraPark;
+import org.matsim.contrib.smartcity.agent.parking.ParksContainer;
 import org.matsim.contrib.smartcity.perception.CamerasContainer;
 import org.matsim.contrib.smartcity.perception.camera.Camera;
 import org.matsim.core.utils.collections.Tuple;
@@ -45,11 +47,15 @@ public class ComunicationServerListXMLReader extends MatsimXmlParser {
 	
 	private static final String ALL = "all";
 	private static final String TRUE = "true";
+
+	private static final String PARKCAMERATAG = "parkCamera";
+	private static final String PARKTAG = "parkings";
 	
 	private HashMap<Tuple<String, String>, Server> servers = new HashMap<Tuple<String, String>, Server>();
 	private Server actualServer;
 	@Inject private Network network;
 	@Inject private CamerasContainer camCont;
+	@Inject private ParksContainer parkCont;
 	
 	public Set<Tuple<String, String>> getServerList() {
 		return servers.keySet();
@@ -83,6 +89,9 @@ public class ComunicationServerListXMLReader extends MatsimXmlParser {
 				Id<Camera> id = Id.create(atts.getValue(IDCAMERA), Camera.class);
 				actualServer.addCamera(id);
 				break;
+			case PARKCAMERATAG:
+				Id<CameraPark> id_ = Id.create(atts.getValue(IDCAMERA), CameraPark.class);
+				actualServer.addPark(id_);
 			case COMMTAG:
 				String all = atts.getValue(ALL);
 				if (all.equals(TRUE)) {
@@ -96,6 +105,14 @@ public class ComunicationServerListXMLReader extends MatsimXmlParser {
 				if (all_.equals(TRUE)) {
 					for (Id<Camera> camera : camCont.getAllId()) {
 						actualServer.addCamera(camera);
+					}
+				}
+				break;
+			case PARKTAG:
+				String all__ = atts.getValue(ALL);
+				if (all__.equals(TRUE)) {
+					for (Id<CameraPark> camera : parkCont.getAllId()) {
+						actualServer.addPark(camera);
 					}
 				}
 				
@@ -124,13 +141,31 @@ public class ComunicationServerListXMLReader extends MatsimXmlParser {
 		return servers.get(server).getCameras();
 	}
 	
+	public Set<Id<CameraPark>> getServerParks(Tuple<String, String> server) {
+		return servers.get(server).getParks();
+	}
+	
 	private class Server {
 		
 		private Set<Coord> coord = new HashSet<Coord>();
 		private Set<Id<Camera>> cameras = new HashSet<Id<Camera>>();
+		private Set<Id<CameraPark>> parks = new HashSet<Id<CameraPark>>();
 		
 		public Set<Coord> getCoord() {
 			return coord;
+		}
+		/**
+		 * @return
+		 */
+		public Set<Id<CameraPark>> getParks() {
+			return this.parks;
+		}
+		/**
+		 * @param id_
+		 */
+		public void addPark(Id<CameraPark> id_) {
+			parks.add(id_);
+			
 		}
 		/**
 		 * @param id

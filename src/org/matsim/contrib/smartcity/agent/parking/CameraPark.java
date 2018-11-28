@@ -12,7 +12,7 @@ import org.matsim.facilities.ActivityFacility;
  */
 public class CameraPark {
 
-	private String id;
+	private Id<CameraPark> id;
 	private Id<ActivityFacility> parking;
 	private FacilityWithMoreEntranceParkingManager manager;
 
@@ -21,7 +21,7 @@ public class CameraPark {
 	 * @param linkId
 	 * @param wrapper
 	 */
-	public CameraPark(String idCameraStr, Id<ActivityFacility> parking, FacilityWithMoreEntranceParkingManager manager) {
+	public CameraPark(Id<CameraPark> idCameraStr, Id<ActivityFacility> parking, FacilityWithMoreEntranceParkingManager manager) {
 		this.id = idCameraStr;
 		this.parking = parking;
 		this.manager = manager;
@@ -34,7 +34,7 @@ public class CameraPark {
 	/**
 	 * @return the id
 	 */
-	public String getId() {
+	public Id<CameraPark> getId() {
 		return id;
 	}
 }

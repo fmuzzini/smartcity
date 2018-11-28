@@ -9,6 +9,7 @@ import java.util.Set;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.smartcity.InstantationUtils;
+import org.matsim.contrib.smartcity.agent.parking.CameraPark;
 import org.matsim.contrib.smartcity.comunication.wrapper.ComunicationWrapper;
 import org.matsim.contrib.smartcity.perception.camera.Camera;
 import org.matsim.core.config.Config;
@@ -81,7 +82,8 @@ public class ComunicationModule extends AbstractModule implements StartupListene
 			String serverClass = server.getSecond();
 			Set<Coord> coord = reader.getServerCoord(server);
 			Set<Id<Camera>> cameras = reader.getServerCameras(server);
-			factory.instantiateServer(serverId, serverClass, coord, cameras);
+			Set<Id<CameraPark>> parks = reader.getServerParks(server);
+			factory.instantiateServer(serverId, serverClass, coord, cameras, parks);
 		}
 		
 	}

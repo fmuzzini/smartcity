@@ -73,7 +73,9 @@ VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler {
 	}
 	
 	public void broadcast(ComunicationMessage message) {
-		reachable.stream().forEach(c -> c.sendToMe(message));
+		synchronized (reachable) {
+			reachable.stream().forEach(c -> c.sendToMe(message));
+		}
 	}
 	
 	/**
@@ -97,7 +99,9 @@ VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler {
 	@Override
 	public void handleEvent(VehicleLeavesTrafficEvent event) {
 		ComunicationClient client = getClientFromEvent(event);
-		this.reachable.remove(client);
+		synchronized (reachable) {
+			this.reachable.remove(client);
+		}
 		this.vehToClient.remove(event.getVehicleId());
 		
 	}
@@ -119,7 +123,9 @@ VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler {
 				}
 			}
 			if (covered == true) {
-				this.reachable.add(client);
+				synchronized (reachable) {
+					this.reachable.add(client);
+				}
 			}
 		}				
 	}
@@ -166,9 +172,13 @@ VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler {
 				}
 			}
 			if (covered == true && !this.reachable.contains(client)) {
-				this.reachable.add(client);
+				synchronized (reachable) {
+					this.reachable.add(client);
+				}
 			} else if (covered == false && this.reachable.contains(client)) {
-				this.reachable.remove(client);
+				synchronized (reachable) {
+					this.reachable.remove(client);
+				}
 			}
 		}				
 		

@@ -6,6 +6,8 @@ package org.matsim.contrib.smartcity.agent;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.mobsim.qsim.pt.MobsimDriverPassengerAgent;
 
 /**
  * Interface that define the method that can be called for using an agent driver logic.
@@ -61,6 +63,16 @@ public interface SmartDriverLogic {
 	 * @return travel distance
 	 */
 	Double getDistance();
+
+	/**
+	 * @param p
+	 */
+	void setPerson(Person p);
+
+	/**
+	 * @param agent
+	 */
+	void setAgent(MobsimDriverPassengerAgent agent);
 
 
 

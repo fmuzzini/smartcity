@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.smartcity.agent.parking.CameraPark;
 import org.matsim.contrib.smartcity.perception.camera.Camera;
 
 /**
@@ -22,6 +23,12 @@ public interface ComunicationServerFactory {
 	 * @param coord set of coords of position of server appendices
 	 */
 	void instantiateServer(String serverId, String serverClass, Set<Coord> coord,
-			Set<Id<Camera>> cameras);
+			Set<Id<Camera>> camerasId, Set<Id<CameraPark>> parksId);
+	
+	class ServerData {
+		public Set<Coord> coord;
+		public Set<Camera> cameras;
+		public Set<CameraPark> parks;
+	}
 
 }

@@ -10,6 +10,10 @@ import org.alex73.osmemory.XMLReader;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.signals.SignalSystemsConfigGroup;
+import org.matsim.contrib.smartcity.comunication.ComunicationConfigGroup;
+import org.matsim.contrib.smartcity.comunication.wrapper.ComunicationFixedWrapper;
+import org.matsim.contrib.smartcity.perception.PerceptionConfigGroup;
+import org.matsim.contrib.smartcity.perception.wrapper.ActivePerceptionWrapperImpl;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
@@ -17,6 +21,7 @@ import org.matsim.core.config.groups.ControlerConfigGroup;
 import org.matsim.core.config.groups.FacilitiesConfigGroup;
 import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.config.groups.NetworkConfigGroup;
+import org.matsim.core.config.groups.ParallelEventHandlingConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
@@ -46,10 +51,15 @@ public class ScenarioFromOsm {
 	private static final long RANDOM_SEED = 4711;
 	private static final String COORDINATE_SYSTEM_FROM = "WGS84";
 	private static final String COORDINATE_SYTEM_TO = "EPSG:32632";
-	private static final String TO_SET = "TO_SET";
+	private static final String TO_SET = "plans.xml";
 	private static final String OUTPUT_DIR = "./output";
 	private static final String HOME = "h";
 	private static final String WORK = "w";
+	private static final String DEFAULT_COMM_WRAPPER = ComunicationFixedWrapper.class.getCanonicalName();
+	private static final String DEFAULT_RANGE = "1000";
+	private static final String DEFAULT_SERVER_LIST = "serverList.xml";
+	private static final String DEFAULT_PERC_WRAPPER = ActivePerceptionWrapperImpl.class.getCanonicalName();
+	private static final String DEFAULT_CAMERA_FILE = "cameras.xml";
 	
 	private static ArrayList<ConfigGroup> configGroups = new ArrayList<ConfigGroup>();
 	
@@ -88,6 +98,7 @@ public class ScenarioFromOsm {
 		Network network = NetworkUtils.createNetwork();
 		OsmNetworkReader reader = new OsmNetworkReaderWithReverse(network, new GeotoolsTransformation(COORDINATE_SYSTEM_FROM, COORDINATE_SYTEM_TO), true, false, keepPaths);
 		reader.parse(osmFile);
+		OsmNetworkReaderWithReverse.computeCap(network);
 		
 		//add restrictions
 		Restrictions res = new Restrictions(result, network);
@@ -143,11 +154,16 @@ public class ScenarioFromOsm {
 		GlobalConfigGroup global = new GlobalConfigGroup();
 		global.setRandomSeed(RANDOM_SEED);
 		global.setCoordinateSystem(COORDINATE_SYTEM_TO);
+		global.setNumberOfThreads(8);
 		configGroups.add(global);
 		
 		PlansConfigGroup plans = new PlansConfigGroup();
 		plans.setInputFile(TO_SET);
 		configGroups.add(plans);
+		
+		ParallelEventHandlingConfigGroup event = new ParallelEventHandlingConfigGroup();
+		event.setNumberOfThreads(8);
+		configGroups.add(event);
 		
 		ControlerConfigGroup controler = new ControlerConfigGroup();
 		controler.setOutputDirectory(OUTPUT_DIR);
@@ -167,6 +183,7 @@ public class ScenarioFromOsm {
 		qsim.setSnapshotPeriod(0);
 		qsim.setUsingFastCapacityUpdate(false);
 		qsim.setUseLanes(true);
+		qsim.setNumberOfThreads(8);
 		configGroups.add(qsim);
 		
 		PlanCalcScoreConfigGroup score = new PlanCalcScoreConfigGroup();
@@ -214,7 +231,16 @@ public class ScenarioFromOsm {
 		strategy.addStrategySettings(set2);
 		configGroups.add(strategy);
 		
+		ComunicationConfigGroup comunication = new ComunicationConfigGroup();
+		comunication.setWrapper(DEFAULT_COMM_WRAPPER);
+		comunication.setRange(DEFAULT_RANGE);
+		comunication.setServerList(DEFAULT_SERVER_LIST);
+		configGroups.add(comunication);
 		
+		PerceptionConfigGroup perception = new PerceptionConfigGroup();
+		perception.setWrapperClass(DEFAULT_PERC_WRAPPER);
+		perception.setCameraFile(DEFAULT_CAMERA_FILE);
+		configGroups.add(perception);
 	}
 
 }

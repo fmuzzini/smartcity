@@ -1,5 +1,7 @@
 package org.matsim.contrib.smartcity.perception.wrapper;
 
+import java.util.HashMap;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.events.handler.LinkLeaveEventHandler;
@@ -30,6 +32,10 @@ public interface PassivePerceptionWrapper extends LinkEnterEventHandler, LinkLea
 	 */
 	public LinkTrafficStatus getLinkTrafficStatus(Id<Link> idLink);
 	
+	/**
+	 * Return a complete map of flow
+	 */
+	public HashMap<Id<Link>, LinkTrafficStatus> getTrafficMap();
 	/**
 	 * Return the total number of vehicles on link
 	 * 
